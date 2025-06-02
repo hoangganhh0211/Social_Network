@@ -11,6 +11,7 @@
             <a href="{{ url_for('posts.feed') }}">Feed</a> |
             <a href="{{ url_for('friends.friends_list') }}">Bạn bè</a> |
             <a href="{{ url_for('messages.inbox') }}">Tin nhắn</a> |
+            <a href="{{ url_for('profile.view_profile', user_id=session.user_id) }}">Hồ Sơ</a> |
             <a href="{{ url_for('auth.logout') }}">Đăng xuất ({{ session.username }})</a>
         {% else %}
             <a href="{{ url_for('auth.login') }}">Đăng nhập</a> |

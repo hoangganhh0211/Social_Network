@@ -9,6 +9,7 @@ class User(db.Model):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
+    avatar_url = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
 
 # Bảng Lưu bài viết.

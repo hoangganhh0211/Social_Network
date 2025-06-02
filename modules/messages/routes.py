@@ -5,6 +5,8 @@ from flask import (
 from extensions import db
 from models import Message, User
 from . import messages_bp
+from extensions import socketio
+from flask_socketio import join_room, leave_room, emit
 
 def login_required(fn):
     from functools import wraps
@@ -67,10 +69,20 @@ def inbox():
         all_users=all_users
     )
 
+# Xử lý route cho từng cuộc trò chuyện
 @messages_bp.route("/<int:other_id>", methods=["GET", "POST"])
 @login_required
 def conversation(other_id):
     uid = session["user_id"]
+    unread_msgs = Message.query.filter(
+        (Message.sender_id == other_id) & 
+        (Message.receiver_id == uid) & 
+        (Message.is_read == False)
+    ).all()
+    for msg in unread_msgs:
+        msg.is_read = True
+    db.session.commit()
+    
     # Nếu gửi tin nhắn từ trang conversation
     if request.method == "POST":
         content = request.form.get("content").strip()
@@ -92,3 +104,91 @@ def conversation(other_id):
         conversation=conv, 
         other=other_user
     )
+
+# ------------------- Phần xử lý Socket.IO -------------------
+
+# join_room quản lý client “tham gia” vào phòng chat và leave_room tương tự
+def register_events(socketio):
+    @socketio.on("join_room")
+    def handle_join(data):
+        username = data.get('username', 'Unknown')
+        room = data.get('room', 'default')
+        join_room(room)
+        emit("message", {"msg": f"{username} vào phòng."}, to=room)
+
+    @socketio.on("leave_room")
+    def handle_leave(data):
+        room = data["room"]
+        leave_room(room)
+        emit("message", {"msg": f"{data['username']} đã chim bay."}, to=room)
+
+@socketio.on("send_message")
+def handle_send_message(data):
+    """
+    Khi client gửi một tin nhắn mới. 
+    Data kỳ vọng:
+    {
+        "sender_id": <int>,
+        "receiver_id": <int>,
+        "content": "<nội dung>",
+        "room": "<tên_room>"
+    }
+    """
+    sender_id = data.get("sender_id")
+    receiver_id = data.get("receiver_id")
+    content = data.get("content", "").strip()
+    room = data.get("room")
+
+    if not (sender_id and receiver_id and content and room):
+        return  # nếu thiếu param, không làm gì
+
+    # 1) Lưu vào DB
+    new_msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
+    db.session.add(new_msg)
+    db.session.commit()
+
+    # 2) Broadcast tin nhắn tới tất cả client đang ở trong room đó
+    # Mình sẽ gửi về 1 object bao gồm: sender_id, content, timestamp, username của sender
+    sender = User.query.get(sender_id)
+    payload = {
+        "sender_id": sender_id,
+        "sender_username": sender.username,
+        "receiver_id": receiver_id,
+        "content": content,
+        "created_at": new_msg.created_at.strftime("%Y-%m-%d %H:%M"),
+        "message_id": new_msg.message_id,  # Để client cập nhật trạng thái riêng từng tin
+        "status": "Đã gửi"
+    }
+    emit("receive_message", payload, room=room)
+
+# Xử lý khi người dùng đánh dấu tin nhắn là đã đọc
+@socketio.on("messages_read")
+def handle_messages_read(data):
+    sender_id = data.get("sender_id")   # Người gửi tin nhắn
+    receiver_id = data.get("receiver_id") # Người đọc tin nhắn (hiện tại)
+    room = data.get("room")
+    if not (sender_id and receiver_id):
+        return
+
+    # # Khi use mở conversation, server cập nhật các tin nhắn chưa đọc thành đã đọc
+    unread_msgs = Message.query.filter(
+        (Message.sender_id == sender_id) & 
+        (Message.receiver_id == receiver_id) & 
+        (Message.is_read == False)
+    ).all()
+    
+    seen_ids = []
+    for msg in unread_msgs:
+        msg.is_read = True
+        seen_ids.append(msg.message_id)
+        
+    db.session.commit()
+    
+
+    # Emit event để các client cập nhật UI, ví dụ:
+        # Emit kèm danh sách ID đã đọc
+    emit("messages_read", {
+        "sender_id": sender_id,
+        "receiver_id": receiver_id,
+        "read_message_ids": seen_ids
+    }, room=room)

@@ -5,7 +5,7 @@
 <h2>Hộp thư</h2>
 
 <div style="display: flex;">
-    <!-- Danh sách recent conversation -->
+    <!-- Danh sách Tin Nhắn Gần Đây -->
     <div style="width: 30%; border-right: 1px solid #ccc; padding-right: 10px;">
         <h4>Trò chuyện gần đây</h4>
         {% for conv in conversations %}
@@ -21,24 +21,36 @@
         {% endfor %}
     </div>
 
-    <!-- Phần hiển thị nội dung conversation hoặc form tạo mới -->
+    <!-- Nội dung Chat hoặc Tạo mới -->
     <div style="width: 70%; padding-left: 10px;">
         {% if other %}
             <h4>Chat với {{ other.username }}</h4>
-            <div style="height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 5px;">
+            <div id="chat-window" style="height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 5px;">
                 {% for msg in conversation %}
                     {% if msg.sender_id == session.user_id %}
-                        <p style="text-align: right;"><strong>{{ session.username }}:</strong> {{ msg.content }} <br>
-                        <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                        <p style="text-align: right;" id="msg-{{ msg.id }}">
+                            <strong>{{ session.username }}:</strong> {{ msg.content }} <br>
+                            <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small><br>
+                            <small style="color: {% if msg.is_read %}green{% else %}gray{% endif %}; font-style: italic;">
+                                {% if msg.is_read %}
+                                    Đã xem
+                                {% else %}
+                                    Đã gửi
+                                {% endif %}
+                            </small>
+                        </p>
                     {% else %}
-                        <p><strong>{{ other.username }}:</strong> {{ msg.content }} <br>
-                        <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                        <p id="msg-{{ msg.id }}">
+                            <strong>{{ other.username }}:</strong> {{ msg.content }} <br>
+                            <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </p>
                     {% endif %}
                     <hr>
                 {% endfor %}
             </div>
-            <form method="POST">
-                <textarea name="content" rows="2" cols="50" placeholder="Nhập tin nhắn..."></textarea><br>
+
+            <form id="chat-form">
+                <textarea id="message-input" name="content" rows="2" cols="50" placeholder="Nhập tin nhắn..."></textarea><br>
                 <button type="submit">Gửi</button>
             </form>
         {% else %}
@@ -56,4 +68,20 @@
         {% endif %}
     </div>
 </div>
+
+{% if other %}
+<!-- Gắn Socket.IO và JS -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+
+<!-- Biến toàn cục cho JS -->
+<script>
+    window.SENDER_ID = {{ session.user_id }};
+    window.RECEIVER_ID = {{ other.user_id }};
+    window.SENDER_USERNAME = "{{ session.username }}";
+    window.RECEIVER_USERNAME = "{{ other.username }}";
+</script>
+
+<!-- Import file JS riêng -->
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endif %}
 {% endblock %}
