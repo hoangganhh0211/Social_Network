@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Bạn bè{% endblock %}
+
+{% block content %}
+<h2>Danh sách bạn bè</h2>
+
+<h3>Yêu cầu kết bạn đến bạn</h3>
+{% for u in requests %}
+    <div>
+        {{ u.username }}
+        <form method="POST" action="{{ url_for('friends.accept_request', from_id=u.user_id) }}" style="display:inline">
+            <button type="submit">Chấp nhận</button>
+        </form>
+    </div>
+{% else %}
+    <p>Chưa có yêu cầu nào.</p>
+{% endfor %}
+<hr>
+
+<h3>Bạn bè hiện có</h3>
+{% for u in friends %}
+    <div>
+        {{ u.username }}
+        <form method="POST" action="{{ url_for('friends.remove_friend', friend_id=u.user_id) }}" style="display:inline">
+            <button type="submit">Xóa bạn</button>
+        </form>
+    </div>
+{% else %}
+    <p>Chưa có bạn bè nào.</p>
+{% endfor %}
+<hr>
+
+<h3>Gửi lời mời kết bạn</h3>
+{% for u in all_users %}
+    {% if u not in friends and u not in requests %}
+        <div>
+            {{ u.username }}
+            <form method="POST" action="{{ url_for('friends.send_request', to_id=u.user_id) }}" style="display:inline">
+                <button type="submit">Kết bạn</button>
+            </form>
+        </div>
+    {% endif %}
+{% else %}
+    <p>Không có người dùng nào khác.</p>
+{% endfor %}
+{% endblock %}

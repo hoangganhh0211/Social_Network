@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Social Network{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        {% if session.user_id %}
+            <a href="{{ url_for('posts.feed') }}">Feed</a> |
+            <a href="{{ url_for('friends.friends_list') }}">Bạn bè</a> |
+            <a href="{{ url_for('messages.inbox') }}">Tin nhắn</a> |
+            <a href="{{ url_for('auth.logout') }}">Đăng xuất ({{ session.username }})</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}">Đăng nhập</a> |
+            <a href="{{ url_for('auth.register') }}">Đăng ký</a>
+        {% endif %}
+    </nav>
+    <hr>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash {{ category }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

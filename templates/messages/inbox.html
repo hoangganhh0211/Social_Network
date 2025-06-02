@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Tin nhắn{% endblock %}
+
+{% block content %}
+<h2>Hộp thư</h2>
+
+<div style="display: flex;">
+    <!-- Danh sách recent conversation -->
+    <div style="width: 30%; border-right: 1px solid #ccc; padding-right: 10px;">
+        <h4>Trò chuyện gần đây</h4>
+        {% for conv in conversations %}
+            <div>
+                <a href="{{ url_for('messages.conversation', other_id=conv.other_id) }}">
+                    {{ conv.other_username }} <br>
+                    <small>{{ conv.last_msg[:20] }}… ({{ conv.timestamp.strftime('%Y-%m-%d %H:%M') }})</small>
+                </a>
+                <hr>
+            </div>
+        {% else %}
+            <p>Chưa có cuộc trò chuyện nào.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Phần hiển thị nội dung conversation hoặc form tạo mới -->
+    <div style="width: 70%; padding-left: 10px;">
+        {% if other %}
+            <h4>Chat với {{ other.username }}</h4>
+            <div style="height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 5px;">
+                {% for msg in conversation %}
+                    {% if msg.sender_id == session.user_id %}
+                        <p style="text-align: right;"><strong>{{ session.username }}:</strong> {{ msg.content }} <br>
+                        <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                    {% else %}
+                        <p><strong>{{ other.username }}:</strong> {{ msg.content }} <br>
+                        <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                    {% endif %}
+                    <hr>
+                {% endfor %}
+            </div>
+            <form method="POST">
+                <textarea name="content" rows="2" cols="50" placeholder="Nhập tin nhắn..."></textarea><br>
+                <button type="submit">Gửi</button>
+            </form>
+        {% else %}
+            <h4>Tạo tin nhắn mới</h4>
+            <form method="POST">
+                <label>Gửi đến:</label>
+                <select name="to_id">
+                    {% for u in all_users %}
+                        <option value="{{ u.user_id }}">{{ u.username }}</option>
+                    {% endfor %}
+                </select><br><br>
+                <textarea name="content" rows="3" cols="50" placeholder="Nội dung..."></textarea><br><br>
+                <button type="submit">Gửi</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

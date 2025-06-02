@@ -1,8 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, BOOLEAN, ForeignKey
 from sqlalchemy.sql import func
-
-db = SQLAlchemy()
+from extensions import db
 
 # Bảng Lưu thông tin người dùng
 class User(db.Model):

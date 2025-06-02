@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+<h2>Trang chủ / Feed</h2>
+
+<form method="POST" action="{{ url_for('posts.create_post') }}">
+    <textarea name="content" rows="3" cols="60" placeholder="Bạn đang nghĩ gì?"></textarea><br>
+    <input type="text" name="media_url" placeholder="URL hình/ảnh (tuỳ chọn)"><br><br>
+    <button type="submit">Đăng</button>
+</form>
+<hr>
+
+{% for item in posts %}
+    <div class="post">
+        <p><strong>{{ item.user.username }}</strong> ({{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}):</p>
+        <p>{{ item.post.content }}</p>
+        {% if item.post.media_url %}
+            <img src="{{ item.post.media_url }}" alt="media" width="200">
+        {% endif %}
+        <p><a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
+            Bình luận ({{ item.comment_count }})
+        </a></p>
+        <hr>
+    </div>
+{% else %}
+    <p>Chưa có bài viết nào.</p>
+{% endfor %}
+{% endblock %}
