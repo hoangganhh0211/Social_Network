@@ -517,6 +517,87 @@ a:hover {
     cursor: pointer;
 }
 
+/* Trang profile */
+.profile-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-page h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-container {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.avatar-container img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.upload-form {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.upload-form input[type="file"] {
+    margin-right: 0.75rem;
+}
+
+.upload-form button {
+    background-color: #1a73e8;
+    color: #ffffff;
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.upload-form button:hover {
+    background-color: #1557b0;
+}
+
+.post-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.post-item {
+    background-color: #f9f9f9;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.post-item img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+    border-radius: 6px;
+}
+
+.post-item small {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+
 /* Responsive adjustments */
 @media (min-width: 768px) {
     .inbox-page .inbox-container {
