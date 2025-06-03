@@ -2,6 +2,7 @@
 {% block title %}Đăng nhập{% endblock %}
 
 {% block content %}
+<div class="login-page">
 <h2>Đăng nhập</h2>
 <form method="POST">
     <label>Username:</label><br>
@@ -16,4 +17,6 @@
 <p><a href="{{ url_for('auth.forgot_password') }}">Quên mật khẩu?</a></p>
 
 <p>Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký</a></p>
+</div>
 {% endblock %}
+

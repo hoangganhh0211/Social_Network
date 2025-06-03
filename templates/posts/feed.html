@@ -2,13 +2,15 @@
 {% block title %}Feed{% endblock %}
 
 {% block content %}
+<div class="feed-page">
 <h2>Trang chủ / Feed</h2>
 
-<form method="POST" action="{{ url_for('posts.create_post') }}">
+<form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data">
     <textarea name="content" rows="3" cols="60" placeholder="Bạn đang nghĩ gì?"></textarea><br>
-    <input type="text" name="media_url" placeholder="URL hình/ảnh (tuỳ chọn)"><br><br>
+    <input type="file" name="media_file"><br><br>
     <button type="submit">Đăng</button>
 </form>
+
 <hr>
 
 {% for item in posts %}
@@ -16,14 +18,21 @@
         <p><strong>{{ item.user.username }}</strong> ({{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}):</p>
         <p>{{ item.post.content }}</p>
         {% if item.post.media_url %}
-            <img src="{{ item.post.media_url }}" alt="media" width="200">
+            {% if item.post.media_url.endswith(".mp4") %}
+                <video width="300" controls>
+                    <source src="{{ item.post.media_url }}" type="video/mp4">
+                </video>
+            {% else %}
+                <img src="{{ item.post.media_url }}" alt="media" width="200">
+            {% endif %}
         {% endif %}
         <p><a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
             Bình luận ({{ item.comment_count }})
         </a></p>
         <hr>
-    </div>
+    </div>  
 {% else %}
     <p>Chưa có bài viết nào.</p>
 {% endfor %}
+</div>
 {% endblock %}
