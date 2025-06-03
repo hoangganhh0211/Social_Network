@@ -1,0 +1,27 @@
+<!-- templates/profile/view.html -->
+<h2>Trang cá nhân của {{ user.username }}</h2>
+
+<img src="{{ user.avatar_url or url_for('static', filename='default-avatar.png') }}" 
+     alt="avatar" width="150" height="150">
+
+{% if session.get("user_id") == user.user_id %}
+<form action="{{ url_for('profile.upload_avatar') }}" method="post" enctype="multipart/form-data">
+    <input type="file" name="avatar" accept="image/*" required>
+    <button type="submit">Tải ảnh đại diện</button>
+</form>
+{% endif %}
+
+<h3>Bài viết đã đăng</h3>
+<ul>
+  {% for post in posts %}
+    <li>
+        <p>{{ post.content }}</p>
+        {% if post.media_url %}
+            <img src="{{ post.media_url }}" width="200">
+        {% endif %}
+        <small>Ngày đăng: {{ post.created_at }}</small>
+    </li>
+  {% else %}
+    <li>Chưa có bài viết nào.</li>
+  {% endfor %}
+</ul>
