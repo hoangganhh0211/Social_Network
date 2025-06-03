@@ -1,10 +1,19 @@
 # modules/posts/routes.py
 from flask import (
-    render_template, request, redirect, url_for, session, flash
+    render_template, request, redirect, url_for, session, flash, Blueprint
 )
 from extensions import db
 from models import Post, Comment, Hashtag, PostHashtag, User
 from . import posts_bp
+from datetime import datetime, timedelta
+from modules.posts.videos import videos_bp
+
+# Đăng ký blueprint cho videos
+posts_bp = Blueprint('posts', __name__)
+
+def register_posts_blueprints(app):
+    app.register_blueprint(posts_bp)
+    app.register_blueprint(videos_bp)
 
 # Yêu cầu user đã đăng nhập mới vào được feed
 def login_required(fn):
@@ -32,9 +41,16 @@ def feed():
             "user": usr,
             "comment_count": comment_count
         })
-    return render_template("feed.html", posts=posts_data)
+        
+    new_post_count = Post.query.filter(Post.created_at >= datetime.utcnow() - timedelta(days=1)).count()
 
+    return render_template(
+        "posts/feed.html", 
+        posts=posts_data,
+        new_post_count=new_post_count
+        )
 
+# Tạo mới bài post
 @posts_bp.route("/create", methods=["POST"])
 @login_required
 def create_post():
@@ -82,8 +98,6 @@ def create_post():
 
     return redirect(url_for("posts.feed"))
 
-
-
 @posts_bp.route("/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def post_detail(post_id):
@@ -112,7 +126,7 @@ def post_detail(post_id):
             return redirect(url_for("posts.post_detail", post_id=post_id))
 
     return render_template(
-        "post_detail.html",
+        "posts/post_detail.html",
         post=post,
         author=author,
         comments=comments

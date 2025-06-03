@@ -8,6 +8,7 @@ from random import randint
 from . import auth_bp
 from flask import current_app
 
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":

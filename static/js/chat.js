@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const isOwnMessage = sender_id === senderId;
 
-        // Nếu là tin mình gửi, căn phải
         if (isOwnMessage) {
+            // Tin mình gửi — căn phải, giữ trạng thái "Đã gửi"
             wrapper.style.textAlign = "right";
             wrapper.innerHTML = `
                 <strong>${sender_username}:</strong> ${content}<br>
@@ -39,12 +39,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="meta">${created_at}</span>
                 <hr>
             `;
+            // Ngay khi nhận được tin nhắn là của bạn (receiver), bắn event messages_read để server đánh dấu đã đọc
+            notifyRead(sender_id, receiverId, roomName);
         }
 
         chatWindow.appendChild(wrapper);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 
+
+    // Cập nhật trạng thái tin nhắn đã đọc
     socket.on("messages_read", (data) => {
         const { read_message_ids } = data;
         read_message_ids.forEach(id => {
@@ -55,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Xử lý gửi tin nhắn
     const form = document.getElementById("chat-form");
     form?.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -72,8 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
         input.value = "";
     });
 
+    // Gửi thông báo đã đọc khi người dùng mở chat
     function notifyRead(sender_id, receiver_id, room) {
-        socket.emit("read_messages", {
+        socket.emit("messages_read", {
             sender_id: sender_id,
             receiver_id: receiver_id,
             room: room

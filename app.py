@@ -10,6 +10,8 @@ from modules.profile.routes import profile_bp
 from config import Config  # import cấu hình
 from extensions import socketio
 
+from modules.posts.routes import register_posts_blueprints
+
 app = Flask(__name__)
 migrate = Migrate()
 app.config.from_object(Config)  # load config từ class Config
@@ -28,7 +30,7 @@ register_events(socketio)
 
 # Đăng ký các blueprint
 app.register_blueprint(auth_bp, url_prefix="/auth")
-app.register_blueprint(posts_bp, url_prefix="/posts")
+register_posts_blueprints(app)
 app.register_blueprint(friends_bp, url_prefix="/friends")
 app.register_blueprint(messages_bp, url_prefix="/messages")
 app.register_blueprint(profile_bp, url_prefix="/profile")

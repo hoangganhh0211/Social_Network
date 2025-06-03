@@ -2,37 +2,104 @@
 {% block title %}Feed{% endblock %}
 
 {% block content %}
-<div class="feed-page">
-<h2>Trang chủ / Feed</h2>
+<!-- HEADER -->
+<header class="header" style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ccc;">
+    <!-- Logo -->
+    <div class="logo" style="margin-right: 20px;">
+        <a href="{{ url_for('posts.feed') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 40px;">
+        </a>
+    </div>
 
-<form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data">
-    <textarea name="content" rows="3" cols="60" placeholder="Bạn đang nghĩ gì?"></textarea><br>
-    <input type="file" name="media_file"><br><br>
-    <button type="submit">Đăng</button>
-</form>
+    <!-- Thanh tìm kiếm -->
+    <div class="search-bar" style="flex: 1; max-width: 400px; margin-right: 20px;">
+        <form method="GET" action="{{ url_for('posts.feed') }}">
+            <input 
+                type="text" 
+                name="q" 
+                placeholder="Tìm bài viết, bạn bè..." 
+                style="width: 100%; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc;"
+            >
+        </form>
+    </div>
 
-<hr>
+    <!-- Menu điều hướng -->
+    <nav class="nav-menu" style="display: flex; align-items: center; gap: 15px; margin-right: 20px;">
+        <a href="{{ url_for('posts.feed') }}" style="text-decoration: none; color: #333;">Trang chủ</a>
+        <a href="{{ url_for('videos.video_index') }}" style="text-decoration: none; color: #333;">Video</a>
+        <a href="{{ url_for('friends.friends_list') }}" style="text-decoration: none; color: #333;">Bạn bè</a>
+        
+    </nav>
 
-{% for item in posts %}
-    <div class="post">
-        <p><strong>{{ item.user.username }}</strong> ({{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}):</p>
-        <p>{{ item.post.content }}</p>
-        {% if item.post.media_url %}
-            {% if item.post.media_url.endswith(".mp4") %}
-                <video width="300" controls>
-                    <source src="{{ item.post.media_url }}" type="video/mp4">
-                </video>
-            {% else %}
-                <img src="{{ item.post.media_url }}" alt="media" width="200">
-            {% endif %}
-        {% endif %}
-        <p><a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
-            Bình luận ({{ item.comment_count }})
-        </a></p>
-        <hr>
-    </div>  
-{% else %}
-    <p>Chưa có bài viết nào.</p>
-{% endfor %}
+</header>
+
+<!-- NƠI HIỂN THỊ CÁC BÀI VIẾT -->
+<div class="feed-page" style="max-width: 600px; margin: 20px auto;">
+    <!-- Form tạo bài mới -->
+    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" style="margin-bottom: 20px;">
+        <textarea 
+            name="content" 
+            rows="3" 
+            placeholder="Bạn đang nghĩ gì?" 
+            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
+        ></textarea><br><br>
+        <input type="file" name="media_file"><br><br>
+        <button type="submit" style="padding: 8px 16px; border: none; background: #007BFF; color: white; border-radius: 4px;">Đăng</button>
+    </form>
+
+    <hr>
+
+    {% if posts %}
+        {% for item in posts %}
+            <div class="post" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                <!-- Thông tin tác giả -->
+                <div class="post-header" style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <div class="avatar" style="margin-right: 10px;">
+                        {% if item.user.avatar_url %}
+                            <img 
+                                src="{{ item.user.avatar_url }}" 
+                                alt="{{ item.user.username }}" 
+                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
+                            >
+                        {% else %}
+                            <img 
+                                src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                alt="Avatar mặc định" 
+                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
+                            >
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-weight: bold;">{{ item.user.username }}</p>
+                        <p style="margin: 0; font-size: 12px; color: #555;">{{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+
+                <!-- Nội dung bài viết -->
+                <div class="post-content" style="margin-bottom: 10px;">
+                    <p style="margin: 0 0 10px 0;">{{ item.post.content }}</p>
+                    {% if item.post.media_url %}
+                        {% if item.post.media_url.endswith(".mp4") %}
+                            <video width="100%" controls style="border-radius: 4px;">
+                                <source src="{{ item.post.media_url }}" type="video/mp4">
+                            </video>
+                        {% else %}
+                            <img src="{{ item.post.media_url }}" alt="media" style="width: 100%; border-radius: 4px;">
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Chân trang bài viết: bình luận, số lượt thích -->
+                <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #007BFF;">
+                    <a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
+                        Bình luận ({{ item.comment_count }})
+                    </a>
+                    <!-- Có thể thêm nút Thích, Chia sẻ -->
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="text-align: center; color: #555;">Chưa có bài viết nào.</p>
+    {% endif %}
 </div>
 {% endblock %}
