@@ -38,11 +38,25 @@ def feed():
 @posts_bp.route("/create", methods=["POST"])
 @login_required
 def create_post():
-    content = request.form.get("content").strip()
-    media_url = request.form.get("media_url").strip() or None
-    if not content:
-        flash("Nội dung bài viết không được để trống.", "danger")
+    from werkzeug.utils import secure_filename
+    import os
+
+    content = request.form.get("content", "").strip()
+    media_file = request.files.get("media_file")
+    media_url = None
+
+    if not content and (not media_file or media_file.filename == ""):
+        flash("Nội dung hoặc media không được để trống.", "danger")
         return redirect(url_for("posts.feed"))
+
+    # Nếu có file media được upload
+    if media_file and media_file.filename != "":
+        filename = secure_filename(media_file.filename)
+        upload_dir = os.path.join("static", "uploads")
+        os.makedirs(upload_dir, exist_ok=True)
+        file_path = os.path.join(upload_dir, filename)
+        media_file.save(file_path)
+        media_url = url_for("static", filename=f"uploads/{filename}")
 
     new_post = Post(
         user_id=session["user_id"],
@@ -52,7 +66,7 @@ def create_post():
     db.session.add(new_post)
     db.session.commit()
 
-    # Xử lý hashtag (nếu người dùng gõ #têntag trong content)
+    # Xử lý hashtag
     words = content.split()
     for w in words:
         if w.startswith("#") and len(w) > 1:
@@ -61,13 +75,13 @@ def create_post():
             if not hashtag:
                 hashtag = Hashtag(name=tag_name)
                 db.session.add(hashtag)
-                db.session.flush()  # để có id trước khi commit
-            # Tạo liên kết PostHashtag
+                db.session.flush()
             ph = PostHashtag(post_id=new_post.post_id, hashtag_id=hashtag.hashtag_id)
             db.session.add(ph)
     db.session.commit()
 
     return redirect(url_for("posts.feed"))
+
 
 
 @posts_bp.route("/<int:post_id>", methods=["GET", "POST"])
