@@ -10,6 +10,7 @@ class Config:
     # Cấu hình session
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
+    
 
     # Cấu hình cơ sở dữ liệu
     DB_USER = os.getenv("DB_USER", "postgres")

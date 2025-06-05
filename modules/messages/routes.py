@@ -8,6 +8,8 @@ from . import messages_bp
 from extensions import socketio
 from flask_socketio import join_room, leave_room, emit
 
+from flask_login import current_user, login_required
+
 # Login thì zô đc
 def login_required(fn):
     from functools import wraps
@@ -146,6 +148,21 @@ def conversation(other_id):
         other=other_user,
         conversations=recent  # Danh sách trò chuyện gần đây
     )
+    
+# Chia sẻ điểm số trò chơi
+@messages_bp.route('/send_score', methods=['POST'])
+@login_required
+def send_score():
+    to_id = request.form['to_id']
+    content = request.form['content']
+
+    msg = Message(sender_id=current_user.user_id, receiver_id=to_id, content=content)
+
+    flash("Đã chia sẻ điểm số thành công!", "success")
+    db.session.add(msg)
+    db.session.commit()
+
+    return redirect(url_for('games.games_home'))
 
 # ------------------- Phần xử lý Socket.IO -------------------
 

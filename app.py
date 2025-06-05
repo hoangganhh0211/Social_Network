@@ -1,8 +1,8 @@
 import os
 from flask import Flask
 from flask_migrate import Migrate
-from extensions import db, sess, mail
-from modules.auth.routes import auth_bp
+from extensions import db, sess, mail, login_manager
+from modules.auth.routes import auth_bp, User
 from modules.posts.routes import posts_bp
 from modules.friends.routes import friends_bp
 from modules.messages.routes import messages_bp
@@ -10,18 +10,28 @@ from modules.profile.routes import profile_bp
 from config import Config  # import cấu hình
 from extensions import socketio
 
-from modules.posts.routes import register_posts_blueprints
+#
+from modules.posts import register_posts_blueprints
 
 app = Flask(__name__)
 migrate = Migrate()
 app.config.from_object(Config)  # load config từ class Config
+
+# Thiết lập Flask-Login
+login_manager.login_view = 'auth.login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    # user_id ở đây là chuỗi, nên convert về int
+    return User.query.get(int(user_id))
 
 # Khởi tạo extensions
 db.init_app(app)
 sess.init_app(app)
 mail.init_app(app)
 socketio.init_app(app)
-
+login_manager.init_app(app)
 migrate.init_app(app, db)
 
 # Gọi xử lý yêu cầu 

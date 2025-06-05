@@ -7,12 +7,12 @@
     <!-- Logo -->
     <div class="logo" style="margin-right: 20px;">
         <a href="{{ url_for('posts.feed') }}">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 40px;">
+            <img src="{{ url_for('static', filename='logo/parts-1086737_1920.png') }}" alt="Logo" style="height: 30px;">
         </a>
     </div>
 
     <!-- Thanh tìm kiếm -->
-    <div class="search-bar" style="flex: 1; max-width: 400px; margin-right: 20px;">
+    <div class="search-bar" style="flex: 1; max-width: 300px; margin-right: 20px;">
         <form method="GET" action="{{ url_for('posts.feed') }}">
             <input 
                 type="text" 
@@ -23,14 +23,18 @@
         </form>
     </div>
 
-    <!-- Menu điều hướng -->
-    <nav class="nav-menu" style="display: flex; align-items: center; gap: 15px; margin-right: 20px;">
-        <a href="{{ url_for('posts.feed') }}" style="text-decoration: none; color: #333;">Trang chủ</a>
-        <a href="{{ url_for('videos.video_index') }}" style="text-decoration: none; color: #333;">Video</a>
-        <a href="{{ url_for('friends.friends_list') }}" style="text-decoration: none; color: #333;">Bạn bè</a>
-        
-    </nav>
+    <!-- BÊN PHẢI: Các liên kết Trang chủ và Trò chơi -->
+    <div class="nav-links" style="display: flex; gap: 0px; align-items: center; margin-left: 450px;">
+        <!-- Logo Trang chủ -->
+        <a href="{{ url_for('posts.feed') }}">
+            <img src="{{ url_for('static', filename='logo/home.png') }}" alt="Logo trang chủ" style="height: 35px; margin-right: 10px;">
+        </a>
 
+        <!-- Logo Trò chơi -->
+        <a href="{{ url_for('games.games_home') }}">
+            <img src="{{ url_for('static', filename='logo/videogames.png') }}" alt="Logo Trò chơi" style="height: 35px; margin-left: 10px;">
+        </a>
+    </div>
 </header>
 
 <!-- NƠI HIỂN THỊ CÁC BÀI VIẾT -->

@@ -7,6 +7,8 @@ from models import User
 from random import randint
 from . import auth_bp
 from flask import current_app
+from flask_login import login_user, logout_user
+
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -46,6 +48,7 @@ def login():
         if user and check_password_hash(user.password, password):
             session["user_id"] = user.user_id
             session["username"] = user.username
+            login_user(user)
             return redirect(url_for("posts.feed"))
         flash("Thông tin đăng nhập không đúng.", "danger")
         return redirect(url_for("auth.login"))
@@ -143,4 +146,5 @@ def reset_password():
 @auth_bp.route("/logout")
 def logout():
     session.clear()
+    logout_user()
     return redirect(url_for("auth.login"))

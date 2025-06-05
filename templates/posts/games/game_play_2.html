@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Trò chơi Hứng Trứng{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center;">Trò chơi Hứng Trứng Gà</h2>
+
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <canvas id="gameCanvas" width="800" height="600" style="border:1px solid #000;"></canvas>
+    <p id="score" style="margin-top: 10px; font-weight: bold;">Điểm: 0</p>
+    <p id="gameOverText" style="color: red; font-weight: bold; display: none;">Game Over! Nhấn Enter để chơi lại.</p>
+    <p><a href="{{ url_for('games.games_home') }}">⬅️ Quay lại danh sách trò chơi</a></p>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Load ảnh
+    const backgroundImg = new Image();
+    backgroundImg.src = "{{ url_for('static', filename='assets/game_play_2/assets/background.png') }}";
+
+    const basketImg = new Image();
+    basketImg.src = "{{ url_for('static', filename='assets/game_play_2/assets/basket.png') }}";
+
+    const eggImg = new Image();
+    eggImg.src = "{{ url_for('static', filename='assets/game_play_2/assets/egg.png') }}";
+
+    // Load âm thanh
+    const catchSound = new Audio("{{ url_for('static', filename='assets/game_play_2/sounds/catch.wav') }}");
+    const gameOverSound = new Audio("{{ url_for('static', filename='assets/game_play_2/sounds/game_over.wav') }}");
+
+    let basket = {
+        x: canvas.width / 2 - 40,
+        y: canvas.height - 70,
+        width: 80,
+        height: 60,
+        speed: 7
+    };
+
+    let eggs = [];
+    let eggSpawnInterval = 1500;
+    let eggFallSpeed = 2;
+    let score = 0;
+    let gameOver = false;
+
+    const scoreText = document.getElementById("score");
+    const gameOverText = document.getElementById("gameOverText");
+
+    // Di chuyển giỏ
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && basket.x > 0) {
+            basket.x -= basket.speed;
+        } else if (e.key === "ArrowRight" && basket.x < canvas.width - basket.width) {
+            basket.x += basket.speed;
+        }
+    });
+
+    // Restart game
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && gameOver) {
+            location.reload();
+        }
+    });
+
+    function spawnEgg() {
+        let egg = {
+            x: Math.random() * (canvas.width - 30) + 15,
+            y: -30,
+            width: 30,
+            height: 40,
+            caught: false
+        };
+        eggs.push(egg);
+    }
+
+    function drawBasket() {
+        ctx.drawImage(basketImg, basket.x, basket.y, basket.width, basket.height);
+    }
+
+    function drawEggs() {
+        eggs.forEach(egg => {
+            ctx.drawImage(eggImg, egg.x, egg.y, egg.width, egg.height);
+        });
+    }
+
+    function updateGame() {
+        if (gameOver) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+        drawBasket();
+        drawEggs();
+
+        for (let i = eggs.length - 1; i >= 0; i--) {
+            eggs[i].y += eggFallSpeed;
+
+            // Kiểm tra va chạm
+            if (
+                eggs[i].y + eggs[i].height > basket.y &&
+                eggs[i].x + eggs[i].width > basket.x &&
+                eggs[i].x < basket.x + basket.width
+            ) {
+                catchSound.play();
+                eggs.splice(i, 1);
+                score++;
+                scoreText.textContent = "Điểm: " + score;
+                continue;
+            }
+
+            // Rơi xuống đất => game over
+            if (eggs[i].y > canvas.height) {
+                gameOverSound.play();
+                gameOver = true;
+                gameOverText.style.display = "block";
+                updateShareMessage();
+            }
+        }
+
+        requestAnimationFrame(updateGame);
+    }
+
+    setInterval(() => {
+        if (!gameOver) {
+            spawnEgg();
+            eggFallSpeed += 0.05;
+        }
+    }, eggSpawnInterval);
+
+    // Đợi ảnh background load xong mới chạy game
+    backgroundImg.onload = () => {
+        updateGame();
+    }
+
+    // Cập nhật form chia sẻ điểm
+    function updateShareMessage() {
+        const shareContent = document.getElementById("share-content");
+        if (shareContent) {
+            shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Hứng Trứng Gà! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        }
+    }
+</script>
+
+<!-- Form chia sẻ điểm -->
+{% include 'includes/score_share_form.html' %}
+{% endblock %}

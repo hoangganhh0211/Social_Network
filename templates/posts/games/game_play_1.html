@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Trò chơi{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center;">Trò chơi Bắt bóng</h2>
+
+<!-- Căn giữa canvas -->
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <canvas id="gameCanvas" width="480" height="320" style="border:1px solid #000;"></canvas>
+    <p id="score" style="margin-top: 10px; font-weight: bold;">Điểm: 0</p>
+    <p id="gameOverText" style="color: red; font-weight: bold; display: none;">Game Over! Nhấn Enter để chơi lại.</p>
+    <p><a href="{{ url_for('games.games_home') }}">⬅️ Quay lại danh sách trò chơi</a></p>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let x = canvas.width / 2;
+    let y = canvas.height - 30;
+    let dx = 2;
+    let dy = -2;
+    const ballRadius = 10;
+
+    const paddleHeight = 10;
+    const paddleWidth = 75;
+    let paddleX = (canvas.width - paddleWidth) / 2;
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    let score = 0;
+    let gameOver = false;
+
+    const scoreText = document.getElementById("score");
+    const gameOverText = document.getElementById("gameOverText");
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if (e.key === "Right" || e.key === "ArrowRight") {
+            rightPressed = true;
+        } else if (e.key === "Left" || e.key === "ArrowLeft") {
+            leftPressed = true;
+        } else if (e.key === "Enter" && gameOver) {
+            location.reload();
+        }
+    }
+
+    function keyUpHandler(e) {
+        if (e.key === "Right" || e.key === "ArrowRight") {
+            rightPressed = false;
+        } else if (e.key === "Left" || e.key === "ArrowLeft") {
+            leftPressed = false;
+        }
+    }
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function draw() {
+        if (gameOver) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawPaddle();
+
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+        if (y + dy < ballRadius) {
+            dy = -dy;
+            score++;
+            scoreText.textContent = "Điểm: " + score;
+        } else if (y + dy > canvas.height - ballRadius) {
+            if (x > paddleX && x < paddleX + paddleWidth) {
+                dy = -dy;
+                score++;
+                scoreText.textContent = "Điểm: " + score;
+            } else {
+                gameOver = true;
+                gameOverText.style.display = "block";
+                return;
+            }
+        }
+
+        if (rightPressed && paddleX < canvas.width - paddleWidth) {
+            paddleX += 7;
+        } else if (leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    // Cập nhật nội dung tin nhắn khi kết thúc trò chơi
+    function updateShareMessage() {
+        const shareContent = document.getElementById("share-content");
+        if (shareContent) {
+            shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Bắt bóng! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        }
+    }
+
+    function draw() {
+        if (gameOver) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawPaddle();
+
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+        if (y + dy < ballRadius) {
+            dy = -dy;
+            score++;
+            scoreText.textContent = "Điểm: " + score;
+        } else if (y + dy > canvas.height - ballRadius) {
+            if (x > paddleX && x < paddleX + paddleWidth) {
+                dy = -dy;
+                score++;
+                scoreText.textContent = "Điểm: " + score;
+            } else {
+                gameOver = true;
+                gameOverText.style.display = "block";
+                updateShareMessage();  // cập nhật form chia sẻ
+                return;
+            }
+        }
+
+        if (rightPressed && paddleX < canvas.width - paddleWidth) {
+            paddleX += 7;
+        } else if (leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+</script>
+
+<!-- Form chia sẻ điểm -->
+<!--Gọi lại từ includes -->
+{% include 'includes/score_share_form.html' %}
+{% endblock %}

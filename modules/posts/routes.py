@@ -4,16 +4,13 @@ from flask import (
 )
 from extensions import db
 from models import Post, Comment, Hashtag, PostHashtag, User
-from . import posts_bp
 from datetime import datetime, timedelta
-from modules.posts.videos import videos_bp
 
-# Đăng ký blueprint cho videos
-posts_bp = Blueprint('posts', __name__)
+posts_bp = Blueprint('posts', __name__, url_prefix='/posts')
 
-def register_posts_blueprints(app):
-    app.register_blueprint(posts_bp)
-    app.register_blueprint(videos_bp)
+@posts_bp.route('/')
+def post_home():
+    return render_template('posts/index.html')
 
 # Yêu cầu user đã đăng nhập mới vào được feed
 def login_required(fn):

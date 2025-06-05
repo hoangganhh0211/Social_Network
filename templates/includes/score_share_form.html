@@ -1,0 +1,14 @@
+<!-- templates/includes/score_share_form.html -->
+<div style="margin-top: 20px; text-align: center;">
+    <h4>Chia sẻ điểm số cho bạn bè</h4>
+    <form method="POST" action="{{ url_for('messages.send_score') }}">
+        <label>Gửi đến:</label>
+        <select name="to_id" required>
+            {% for u in friends %}
+                <option value="{{ u.user_id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="hidden" name="content" id="share-content">
+        <button type="submit">📨 Chia sẻ</button>
+    </form>
+</div>

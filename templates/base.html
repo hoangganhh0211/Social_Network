@@ -22,6 +22,8 @@
         {% endif %}
     </nav>
     <hr>
+    <!-- Block nav phụ, cho bài đăng và trò chơi -->
+        {% block subnav %}{% endblock %}
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

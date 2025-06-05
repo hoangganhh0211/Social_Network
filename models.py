@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, BOOLEAN, ForeignKey
 from sqlalchemy.sql import func
 from extensions import db
+from flask_login import UserMixin
 
 # Bảng Lưu thông tin người dùng
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(50), unique=True, nullable=False)
@@ -12,6 +13,10 @@ class User(db.Model):
     avatar_url = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
 
+    # Override get_id() để Flask-Login dùng user_id: do flask login cần để xác định id
+    def get_id(self):
+        return str(self.user_id)
+    
 # Bảng Lưu bài viết.
 class Post(db.Model):
     __tablename__ = 'posts'
