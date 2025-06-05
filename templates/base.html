@@ -11,6 +11,10 @@
 <body>
     <nav>
         {% if session.user_id %}
+            <div class="navbar-brand fw-bold" style="display: block; margin-right: 800px;">
+                Social Network
+            </div>
+
             <a href="{{ url_for('posts.feed') }}">Feed</a> |
             <a href="{{ url_for('friends.friends_list') }}">Bạn bè</a> |
             <a href="{{ url_for('messages.inbox') }}">Tin nhắn</a> |
