@@ -63,9 +63,13 @@
                 class="rounded-circle"
                 style="width: 40px; height: 40px; object-fit: cover;"
               >
-              <div class="bg-light p-2 rounded">
-                <strong>{{ other.username }}:</strong> {{ msg.content }}<br>
+              <div class="text-end">
+              <div class="d-inline-block bg-success bg-opacity-25 text-success p-2 rounded">
+                <strong>{{ other.username }}:</strong> {{ msg.content }}
+              </div>
+              <div>
                 <small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+              </div>
               </div>
             </div>
           {% endif %}

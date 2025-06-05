@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, BOOLEAN, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from extensions import db
 from flask_login import UserMixin
 
@@ -12,6 +13,9 @@ class User(db.Model, UserMixin):
     password = Column(String(255), nullable=False)
     avatar_url = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+
+    # Quan hệ đến Post: 1 User có thể có nhiều Post
+    posts = relationship('Post', back_populates='user', cascade='all, delete-orphan') 
 
     # Override get_id() để Flask-Login dùng user_id: do flask login cần để xác định id
     def get_id(self):
@@ -26,6 +30,11 @@ class Post(db.Model):
     media_url = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
 
+    # Quan hệ hai chiều với User
+    user = relationship('User', back_populates='posts')
+    # Quan hệ hai chiều với Comment
+    comments = relationship('Comment', back_populates='post', cascade='all, delete-orphan')
+
 # Bảng Lưu bình luận.
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -35,6 +44,9 @@ class Comment(db.Model):
     content = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
 
+    post = relationship('Post', back_populates='comments')
+    user = relationship('User')
+    
 # Bảng Lưu hashtag
 class Hashtag(db.Model):
     __tablename__ = 'hashtags'

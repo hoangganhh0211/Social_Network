@@ -3,7 +3,6 @@
 
 {% block content %}
 <h2 class="text-center mb-4 pt-4">Trò chơi Hứng Trứng Gà</h2>
-
 <div class="d-flex flex-column align-items-center">
   <canvas id="gameCanvas" width="800" height="600" class="border border-dark"></canvas>
   
@@ -123,7 +122,7 @@
                 gameOverSound.play();
                 gameOver = true;
                 gameOverText.style.display = "block";
-                updateShareMessage();
+                updateShareMessage(); //Gọi phần ẩn ra hiển thị
             }
         }
 
@@ -142,13 +141,22 @@
         updateGame();
     }
 
-    // Cập nhật form chia sẻ điểm
+    // Cập nhật form chia sẻ điểm và bật hiển thị khi Game Over
     function updateShareMessage() {
+        const shareContainer = document.getElementById("share-container");
         const shareContent = document.getElementById("share-content");
-        if (shareContent) {
-            shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Hứng Trứng Gà! Chơi thử tại: http://127.0.0.1:5000/games/`;
-        }
+        if (!shareContainer || !shareContent) return;
+
+        //ND 
+        shareContent.value = 
+            `Tớ vừa đạt ${score} điểm trong trò chơi Hứng Trứng Gà! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        ;
+        
+        // Bật hiển thị khung chia sẻ, đã ẩn display: none
+        shareContainer.style.display = "block";
+
     }
+    
 </script>
 
 <!-- Form chia sẻ điểm -->

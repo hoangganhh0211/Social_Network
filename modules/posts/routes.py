@@ -1,6 +1,6 @@
 # modules/posts/routes.py
 from flask import (
-    render_template, request, redirect, url_for, session, flash, Blueprint
+    render_template, request, redirect, url_for, session, flash, Blueprint, jsonify
 )
 from extensions import db
 from models import Post, Comment, Hashtag, PostHashtag, User
@@ -46,6 +46,41 @@ def feed():
         posts=posts_data,
         new_post_count=new_post_count
         )
+
+# Tìm kiếm dùng jsonify
+@posts_bp.route("/search")
+@login_required
+def search_posts():
+    q = request.args.get("q", "").strip()
+    if not q:
+        # Trả về json có key "posts" với giá trị mảng rỗng
+        return jsonify({'posts': []})
+
+    # JOIN User để lấy username, filter trên content
+    results = (
+        db.session
+        .query(Post, User.username)
+        .join(User, Post.user_id == User.user_id)
+        .filter(Post.content.ilike(f"%{q}%"))
+        .order_by(Post.created_at.desc())
+        .all()
+    )
+
+    output = []
+    for post, username in results:
+        comment_count = Comment.query.filter_by(post_id=post.post_id).count()
+        output.append({
+            "post_id": post.post_id,
+            "content": post.content,
+            "media_url": post.media_url or "",
+            "created_at": post.created_at.strftime("%Y-%m-%d %H:%M"),
+            "username": username,
+            "avatar_url": post.user.avatar_url or url_for("static", filename="images/default-avatar.png"),
+            "comment_count": comment_count
+        })
+    # Trả về JSON với key "posts" chứa danh sách bài viết
+    return jsonify({'posts': output})
+
 
 # Tạo mới bài post
 @posts_bp.route("/create", methods=["POST"])

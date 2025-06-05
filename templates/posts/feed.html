@@ -3,110 +3,200 @@
 
 {% block content %}
 <!-- HEADER -->
-<header class="container-fluid border-bottom py-2 bg-white d-flex align-items-center pt-5">
-  <!-- Logo -->
-  <div class="me-3">
-    <a href="{{ url_for('posts.feed') }}">
-      <img src="{{ url_for('static', filename='logo/parts-1086737_1920.png') }}" alt="Logo" style="height: 30px;">
-    </a>
-  </div>
+<header class="header pt-5" style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ccc;">
+    <!-- Logo -->
+    <div class="logo" style="margin-right: 20px;">
+        <a href="{{ url_for('posts.feed') }}">
+            <img src="{{ url_for('static', filename='logo/parts-1086737_1920.png') }}" alt="Logo" style="height: 30px;">
+        </a>
+    </div>
 
-  <!-- Thanh tìm kiếm -->
-  <div class="flex-grow-1 me-3" style="max-width: 300px;">
-    <form method="GET" action="{{ url_for('posts.feed') }}">
-      <input 
-        type="text" 
-        name="q" 
-        class="form-control" 
-        placeholder="Tìm bài viết, bạn bè..."
-      >
-    </form>
-  </div>
-
-  <!-- Liên kết bên phải -->
-  <div class="d-flex align-items-center ms-auto gap-3">
-    <!-- Trò chơi -->
-    <a href="{{ url_for('games.games_home') }}">
-      <img src="{{ url_for('static', filename='logo/videogames.png') }}" alt="Trò chơi" style="height: 35px;">
-    </a>
-  </div>
+    <!-- Thanh tìm kiếm -->
+    <div class="search-bar" style="flex: 1; max-width: 300px; margin-right: 20px;">
+        <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Tìm bài viết" 
+            style="width: 100%; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc;"
+        >
+    </div>
+    <!-- BÊN PHẢI: Các liên kết Trang chủ và Trò chơi -->
+    <div class="nav-links" style="display: flex; gap: 0px; align-items: center; margin-left: auto;">
+        <!-- Logo Trò chơi -->
+        <a href="{{ url_for('games.games_home') }}">
+            <img src="{{ url_for('static', filename='logo/videogames.png') }}" alt="Logo Trò chơi" style="height: 35px; margin-left: 10px;">
+        </a>
+    </div>
 </header>
 
 <!-- NƠI HIỂN THỊ CÁC BÀI VIẾT -->
-<div class="feed-page container pt-5" style="max-width: 600px;">
+<div class="feed-page" style="max-width: 600px; margin: 20px auto;">
     <!-- Form tạo bài mới -->
-    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" class="mb-4">
-        <div class="mb-3">
-            <textarea 
-                name="content" 
-                rows="3" 
-                placeholder="Bạn đang nghĩ gì?" 
-                class="form-control"
-            ></textarea>
-        </div>
-        <div class="mb-3">
-            <input type="file" name="media_file" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng</button>
+    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" style="margin-bottom: 20px;">
+        <textarea 
+            name="content" 
+            rows="3" 
+            placeholder="Bạn đang nghĩ gì?" 
+            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
+        ></textarea><br><br>
+        <input type="file" name="media_file"><br><br>
+        <button type="submit" style="padding: 8px 16px; border: none; background: #007BFF; color: white; border-radius: 4px;">Đăng</button>
     </form>
 
     <hr>
 
-    {% if posts %}
-        {% for item in posts %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <!-- Thông tin tác giả -->
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="me-3">
+    <div id="posts-container">
+        {% if posts %}
+            {% for item in posts %}
+                <div class="post" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                    <!-- Thông tin của tác giả  -->
+                    <div class="post-header" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <div class="avatar" style="margin-right: 10px;">
                             {% if item.user.avatar_url %}
                                 <img 
                                     src="{{ item.user.avatar_url }}" 
                                     alt="{{ item.user.username }}" 
-                                    class="rounded-circle" 
-                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
                                 >
                             {% else %}
                                 <img 
                                     src="{{ url_for('static', filename='images/default-avatar.png') }}" 
                                     alt="Avatar mặc định" 
-                                    class="rounded-circle" 
-                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
                                 >
                             {% endif %}
                         </div>
                         <div>
-                            <p class="mb-0 fw-bold">{{ item.user.username }}</p>
-                            <small class="text-muted">{{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            <p style="margin: 0; font-weight: bold;">{{ item.user.username }}</p>
+                            <p style="margin: 0; font-size: 12px; color: #555;">
+                                {{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </p>
                         </div>
                     </div>
 
                     <!-- Nội dung bài viết -->
-                    <p>{{ item.post.content }}</p>
-                    {% if item.post.media_url %}
-                        {% if item.post.media_url.endswith(".mp4") %}
-                            <div class="mb-2">
-                                <video class="w-100 rounded" controls>
+                    <div class="post-content" style="margin-bottom: 10px;">
+                        <p style="margin: 0 0 10px 0;">{{ item.post.content }}</p>
+                        {% if item.post.media_url %}
+                            {% if item.post.media_url.endswith(".mp4") %}
+                                <video width="100%" controls style="border-radius: 4px;">
                                     <source src="{{ item.post.media_url }}" type="video/mp4">
                                 </video>
-                            </div>
-                        {% else %}
-                            <img src="{{ item.post.media_url }}" alt="media" class="img-fluid rounded mb-2">
+                            {% else %}
+                                <img src="{{ item.post.media_url }}" alt="media" style="width: 100%; border-radius: 4px;">
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
+                    </div>
 
-                    <!-- Chân trang bài viết -->
-                    <div class="d-flex justify-content-between text-primary small">
+                    <!-- Chân trang bài viết: bình luận, số lượt thích -->
+                    <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #007BFF;">
                         <a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
                             Bình luận ({{ item.comment_count }})
                         </a>
-                        <!-- Bạn có thể thêm Like/Share sau đây -->
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-center text-muted">Chưa có bài viết nào.</p>
-    {% endif %}
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #555;">Chưa có bài viết nào.</p>
+        {% endif %}
+    </div>
 </div>
+
+<!-- Phần sử lý Json search -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("search-input");
+        const postsContainer = document.getElementById("posts-container");
+
+        // Hàm render array JSON thành HTML giống với Jinja template bên trên
+        function renderPosts(postsArray) {
+            if (!postsArray || postsArray.length === 0) {
+                postsContainer.innerHTML = `
+                    <p style="text-align: center; color: #555;">Chưa có bài viết nào khớp.</p>
+                `;
+                return;
+            }
+
+            let html = "";
+            postsArray.forEach(item => {
+                html += `
+                <div class="post" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                    <!-- Thông tin tác giả -->
+                    <div class="post-header" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <div class="avatar" style="margin-right: 10px;">
+                            <img 
+                                src="${ item.avatar_url }" 
+                                alt="${ item.username }" 
+                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
+                            >
+                        </div>
+                        <div>
+                            <p style="margin: 0; font-weight: bold;">${ item.username }</p>
+                            <p style="margin: 0; font-size: 12px; color: #555;">
+                                ${ item.created_at }
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung bài viết -->
+                    <div class="post-content" style="margin-bottom: 10px;">
+                        <p style="margin: 0 0 10px 0;">${ item.content }</p>
+                        ${ item.media_url ?
+                            (item.media_url.endsWith(".mp4")
+                                ? `<video width="100%" controls style="border-radius: 4px;">
+                                        <source src="${ item.media_url }" type="video/mp4">
+                                   </video>`
+                                : `<img src="${ item.media_url }" alt="media" style="width: 100%; border-radius: 4px;">`
+                            )
+                            : ""
+                        }
+                    </div>
+
+                    <!-- Chân trang bài viết -->
+                    <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #007BFF;">
+                        <a href="/posts/${ item.post_id }">
+                            Bình luận (${ item.comment_count })
+                        </a>
+                    </div>
+                </div>
+                `;
+            });
+
+            postsContainer.innerHTML = html;
+        }
+
+        // Gõ nhanh quá lag, phải thêm cái debounce cho delay 
+        let debounceTimeout = null;
+        function debounceFetch(query) {
+            if (debounceTimeout) clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                fetchResults(query);
+            }, 300); 
+        }
+
+        // Hàm gọi fetch tới endpoint /posts/search?q=...
+        function fetchResults(query) {
+            const url = `/posts/search?q=${ encodeURIComponent(query) }`;
+            fetch(url)
+                .then(resp => resp.json())
+                .then(data => {
+                    renderPosts(data.posts);
+                })
+                .catch(err => {
+                    console.error("Lỗi khi fetch search:", err);
+                });
+        }
+
+        // Lắng nghe sự kiện gõ trên ô search
+        searchInput.addEventListener("input", function(e) {
+            const q = e.target.value.trim();
+            if (q.length === 0) {
+                // Nếu xóa hết ký tự, load lại trang để hiển thị feed ban đầu
+                location.reload();
+                return;
+            }
+            debounceFetch(q);
+        });
+    });
+</script>
 {% endblock %}
