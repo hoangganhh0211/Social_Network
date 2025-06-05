@@ -1,9 +1,10 @@
 # modules/posts/routes.py
 from flask import (
-    render_template, request, redirect, url_for, session, flash, Blueprint, jsonify
+    render_template, request, redirect, url_for, session, flash, Blueprint, jsonify, current_app
 )
 from extensions import db
-from models import Post, Comment, Hashtag, PostHashtag, User
+from models import Post, Comment, Hashtag, PostHashtag, User, Notification
+from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 
 posts_bp = Blueprint('posts', __name__, url_prefix='/posts')
@@ -107,13 +108,33 @@ def create_post():
         media_url = url_for("static", filename=f"uploads/{filename}")
 
     new_post = Post(
-        user_id=session["user_id"],
+        user_id=current_user.user_id,
         content=content,
         media_url=media_url
     )
+    
     db.session.add(new_post)
-    db.session.commit()
+    db.session.flush()
+    
+    # Danh sách người đc gửi tb
+    all_users = User.query.filter(User.user_id != current_user.user_id).all()
 
+    # Tạo Notification cho mỗi user
+    notifications = []
+    for u in all_users:
+        notif = Notification(
+            user_id=u.user_id,
+            notif_type='new_post',
+            content=f"{current_user.username} vừa đăng bài mới.",
+            reference_id=current_user.user_id  # để người dùng click notification có thể redirect tới bài post đó
+        )
+        notifications.append(notif)
+    
+    db.session.add_all(notifications)
+
+    # Commit cả post và notifications
+    db.session.commit()
+    
     # Xử lý hashtag
     words = content.split()
     for w in words:

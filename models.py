@@ -16,6 +16,10 @@ class User(db.Model, UserMixin):
 
     # Quan hệ đến Post: 1 User có thể có nhiều Post
     posts = relationship('Post', back_populates='user', cascade='all, delete-orphan') 
+    
+    # Quan hệ tới notifications
+    notifications = relationship('Notification', back_populates='user', cascade='all, delete-orphan')
+    
 
     # Override get_id() để Flask-Login dùng user_id: do flask login cần để xác định id
     def get_id(self):
@@ -77,3 +81,17 @@ class Message(db.Model):
     content = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     is_read = Column(BOOLEAN, default=False)
+    
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    notification_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)   # người nhận thông báo
+    # Loại thông báo
+    notif_type = Column(String(50), nullable=False)
+    content = Column(Text, nullable=False)
+    reference_id = Column(Integer, nullable=True)
+    is_read = Column(BOOLEAN, default=False)
+    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+
+    # Quan hệ với User để dễ join
+    user = relationship('User', back_populates='notifications')

@@ -3,7 +3,7 @@ from flask import (
     render_template, request, redirect, url_for, session, flash
 )
 from extensions import db
-from models import Message, User
+from models import Message, User, Notification
 from . import messages_bp
 from extensions import socketio
 from flask_socketio import join_room, leave_room, emit
@@ -163,6 +163,38 @@ def send_score():
     db.session.commit()
 
     return redirect(url_for('games.games_home'))
+
+@messages_bp.route('/send', methods=['POST'])
+@login_required
+def send_message():
+    # 1. Lấy dữ liệu từ form
+    receiver_id = request.form.get('to_id', type=int)
+    message_content = request.form.get('content', type=str)
+
+    # 2. Kiểm tra xem có đầy đủ không
+    if not receiver_id or not message_content:
+        flash("Vui lòng chọn người nhận và nhập nội dung.", 'warning')
+        return redirect(url_for('messages.inbox'))
+
+    # 3. Tạo đối tượng Message, rồi Notification
+    msg = Message(
+        sender_id=current_user.user_id,
+        receiver_id=receiver_id,
+        content=message_content
+    )
+    db.session.add(msg)
+    db.session.flush()  # Để msg.message_id được sinh ra
+
+    notif = Notification(
+        user_id=receiver_id,
+        notif_type='message',
+        content=f"{sender.username} đã gửi cho bạn một tin nhắn.",
+         reference_id=sender.user_id
+    )
+    db.session.add(notif)
+    db.session.commit()
+
+    return redirect(url_for('messages.inbox'))
 
 # ------------------- Phần xử lý Socket.IO -------------------
 

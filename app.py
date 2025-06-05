@@ -7,6 +7,7 @@ from modules.posts.routes import posts_bp
 from modules.friends.routes import friends_bp
 from modules.messages.routes import messages_bp
 from modules.profile.routes import profile_bp
+from modules.notifications.routes import notifications_bp
 from config import Config  # import cấu hình
 from extensions import socketio
 
@@ -44,6 +45,7 @@ register_posts_blueprints(app)
 app.register_blueprint(friends_bp, url_prefix="/friends")
 app.register_blueprint(messages_bp, url_prefix="/messages")
 app.register_blueprint(profile_bp, url_prefix="/profile")
+app.register_blueprint(notifications_bp, url_prefix="/notifications")
 
 @app.route("/")
 def index():

@@ -76,26 +76,28 @@
         {% endfor %}
       </div>
 
-      <!-- Phần form gửi tin -->
-      <form id="chat-form" method="POST" class="d-flex gap-2">
-        <textarea id="message-input" name="content" class="form-control" rows="2" placeholder="Nhập tin nhắn..."></textarea>
-        <button type="submit" class="btn btn-primary">Gửi</button>
-      </form>
+    <!-- Phần form gửi tin -->
+    <form id="chat-form" action="{{ url_for('messages.send_message') }}" method="POST">
+        <!--Lấy dữ liệu để gửi thông báo đi-->
+        <input type="hidden" name="receiver_id" value="{{ other.user_id }}">
+        <textarea id="message-input" name="content" rows="2" cols="50" placeholder="Nhập tin nhắn..."></textarea><br>
+        <button type="submit">Gửi</button>
+    </form>
+    {% else %}
+    <!-- Phần tạo tin nhắn mới nếu không có 'other' -->
+    <h4>Tạo tin nhắn mới</h4>
+    <form action="{{ url_for('messages.send_message') }}" method="POST">
+        <label>Gửi đến:</label>
+        <select name="to_id">
+        {% for u in all_users %}
+            <option value="{{ u.user_id }}">{{ u.username }}</option>
+        {% endfor %}
+        </select><br><br>
+        <textarea name="content" rows="3" cols="50" placeholder="Nội dung..."></textarea><br><br>
+        <button type="submit">Gửi</button>
+    </form>
+    {% endif %}
 
-      {% else %}
-      <!-- Phần tạo tin nhắn mới nếu không có 'other' -->
-      <h4>Tạo tin nhắn mới</h4>
-      <form method="POST" class="d-flex flex-column gap-3">
-        <label for="to_id" class="form-label">Gửi đến:</label>
-        <select name="to_id" id="to_id" class="form-select w-auto">
-          {% for u in all_users %}
-          <option value="{{ u.user_id }}">{{ u.username }}</option>
-          {% endfor %}
-        </select>
-        <textarea name="content" rows="3" class="form-control" placeholder="Nội dung..."></textarea>
-        <button type="submit" class="btn btn-primary align-self-start">Gửi</button>
-      </form>
-      {% endif %}
     </div>
   </div>
 </div>
