@@ -1,10 +1,4 @@
 # Social_Network
 Trang web mạng xã hội 
 
-source ../.venv/bin/activate
-
-git add .
-git commit -m "Update thêm tính năng trò chơi, chia sẻ điểm số realtime cho bạn bè"
-git push -u origin main
-
-git pull
+Xây dựng một trang web mạng xã hội mini cho phép người dùng có thể đăng bài, chơi game, kết bạn, nhắn tin với nhau.
