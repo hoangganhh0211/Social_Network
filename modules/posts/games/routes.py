@@ -16,7 +16,9 @@ def game1():
     friends = User.query.filter(User.user_id != current_user.user_id).all()
     return render_template('posts/games/game_play_1.html', friends=friends)
 
-# Trò chơi 2: ví dụ đơn giản khác
+# Trò chơi 2: Hứng tứng
 @games_bp.route('/game2')
 def game2():
-    return render_template('posts/games/game_play_2.html')
+    # Truy vấn tất cả bạn bè (hoặc tất cả users trừ chính user)
+    friends = User.query.filter(User.user_id != current_user.user_id).all()
+    return render_template('posts/games/game_play_2.html', friends=friends)

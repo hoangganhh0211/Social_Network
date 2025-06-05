@@ -111,12 +111,16 @@
 
     draw();
 
-    // Cập nhật nội dung tin nhắn khi kết thúc trò chơi
+    // Cập nhật form chia sẻ điểm và bật hiển thị khi Game Over
     function updateShareMessage() {
+        const shareContainer = document.getElementById("share-container");
         const shareContent = document.getElementById("share-content");
-        if (shareContent) {
-            shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Bắt bóng! Chơi thử tại: http://127.0.0.1:5000/games/`;
-        }
+        if (!shareContainer || !shareContent) return;
+
+        //Nd
+        shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Bắt bóng! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        // Bật hiển thị khung chia sẻ, đã ẩn display: none
+        shareContainer.style.display = "block";
     }
 
     function draw() {
@@ -161,6 +165,6 @@
 </script>
 
 <!-- Form chia sẻ điểm -->
-<!--Gọi lại từ includes -->
+<!--Tái sử dụng cấu trúc với game 1,2,3,... includes -->
 {% include 'includes/score_share_form.html' %}
 {% endblock %}

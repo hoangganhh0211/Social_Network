@@ -5,7 +5,7 @@
 <h2 style="text-align: center;">Trò chơi Hứng Trứng Gà</h2>
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-    <canvas id="gameCanvas" width="800" height="600" style="border:1px solid #000;"></canvas>
+    <canvas id="gameCanvas" width="600" height="400" style="border:1px solid #000;"></canvas>
     <p id="score" style="margin-top: 10px; font-weight: bold;">Điểm: 0</p>
     <p id="gameOverText" style="color: red; font-weight: bold; display: none;">Game Over! Nhấn Enter để chơi lại.</p>
     <p><a href="{{ url_for('games.games_home') }}">⬅️ Quay lại danh sách trò chơi</a></p>
@@ -113,7 +113,7 @@
                 gameOverSound.play();
                 gameOver = true;
                 gameOverText.style.display = "block";
-                updateShareMessage();
+                updateShareMessage(); //Gọi phần ẩn ra hiển thị
             }
         }
 
@@ -132,13 +132,22 @@
         updateGame();
     }
 
-    // Cập nhật form chia sẻ điểm
+    // Cập nhật form chia sẻ điểm và bật hiển thị khi Game Over
     function updateShareMessage() {
+        const shareContainer = document.getElementById("share-container");
         const shareContent = document.getElementById("share-content");
-        if (shareContent) {
-            shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Hứng Trứng Gà! Chơi thử tại: http://127.0.0.1:5000/games/`;
-        }
+        if (!shareContainer || !shareContent) return;
+
+        //ND 
+        shareContent.value = 
+            `Tớ vừa đạt ${score} điểm trong trò chơi Hứng Trứng Gà! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        ;
+        
+        // Bật hiển thị khung chia sẻ, đã ẩn display: none
+        shareContainer.style.display = "block";
+
     }
+    
 </script>
 
 <!-- Form chia sẻ điểm -->
