@@ -2,16 +2,16 @@
 {% block title %}Danh sách trò chơi{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">🎮 Chọn một trò chơi</h2>
+<h2 class="text-center pt-5" >🎮 Chọn một trò chơi</h2>
 
-<div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: 20px;">
-    <a href="{{ url_for('games.game1') }}" style="text-align: center;">
-        <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 1"><br>
-        Bắt bóng
-    </a>
-    <a href="{{ url_for('games.game2') }}" style="text-align: center;">
-        <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 2"><br>
-        Hứng Trứng Gà
-    </a>
+<div class="d-flex justify-content-center flex-wrap gap-4 mt-4">
+  <a href="{{ url_for('games.game1') }}" class="text-center text-decoration-none text-dark">
+    <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 1" class="mb-2">
+    <div>Bắt bóng</div>
+  </a>
+  <a href="{{ url_for('games.game2') }}" class="text-center text-decoration-none text-dark">
+    <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 2" class="mb-2">
+    <div>Hứng Trứng Gà</div>
+  </a>
 </div>
 {% endblock %}

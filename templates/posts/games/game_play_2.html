@@ -2,14 +2,24 @@
 {% block title %}Trò chơi Hứng Trứng{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">Trò chơi Hứng Trứng Gà</h2>
+<h2 class="text-center mb-4 pt-4">Trò chơi Hứng Trứng Gà</h2>
 
-<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-    <canvas id="gameCanvas" width="800" height="600" style="border:1px solid #000;"></canvas>
-    <p id="score" style="margin-top: 10px; font-weight: bold;">Điểm: 0</p>
-    <p id="gameOverText" style="color: red; font-weight: bold; display: none;">Game Over! Nhấn Enter để chơi lại.</p>
-    <p><a href="{{ url_for('games.games_home') }}">⬅️ Quay lại danh sách trò chơi</a></p>
+<div class="d-flex flex-column align-items-center">
+  <canvas id="gameCanvas" width="800" height="600" class="border border-dark"></canvas>
+  
+  <p id="score" class="mt-3 fw-bold">Điểm: 0</p>
+  
+  <p id="gameOverText" class="text-danger fw-bold" style="display: none;">
+    Game Over! Nhấn Enter để chơi lại.
+  </p>
+  
+  <p>
+    <a href="{{ url_for('games.games_home') }}" class="text-decoration-none">
+      ⬅️ Quay lại danh sách trò chơi
+    </a>
+  </p>
 </div>
+
 
 <script>
     const canvas = document.getElementById("gameCanvas");

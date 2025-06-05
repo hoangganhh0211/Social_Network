@@ -3,34 +3,35 @@
 
 {% block content %}
 <!-- templates/profile/view.html -->
-<div class="profile-page">
-    <h2>Trang cá nhân của {{ user.username }}</h2>
+<div class="profile-page container py-4">
+  <h2 class="mb-4">Trang cá nhân của {{ user.username }}</h2>
 
-    <div class="avatar-container">
-        <img src="{{ user.avatar_url or url_for('static', filename='default-avatar.png') }}" 
-             alt="avatar">
+  <div class="avatar-container d-flex justify-content-center mb-3">
+    <img src="{{ user.avatar_url or url_for('static', filename='default-avatar.png') }}" 
+         alt="avatar" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+  </div>
+
+  {% if session.get("user_id") == user.user_id %}
+  <form class="upload-form mb-4" action="{{ url_for('profile.upload_avatar') }}" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <input class="form-control" type="file" name="avatar" accept="image/*" required>
     </div>
+    <button type="submit" class="btn btn-primary">Tải ảnh đại diện</button>
+  </form>
+  {% endif %}
 
-    {% if session.get("user_id") == user.user_id %}
-    <form class="upload-form" action="{{ url_for('profile.upload_avatar') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="avatar" accept="image/*" required>
-        <button type="submit">Tải ảnh đại diện</button>
-    </form>
-    {% endif %}
-
-    <h3>Bài viết đã đăng</h3>
-    <ul class="post-list">
-      {% for post in posts %}
-        <li class="post-item">
-            <p>{{ post.content }}</p>
-            {% if post.media_url %}
-                <img src="{{ post.media_url }}">
-            {% endif %}
-            <small>Ngày đăng: {{ post.created_at }}</small>
-        </li>
-      {% else %}
-        <li class="post-item">Chưa có bài viết nào.</li>
-      {% endfor %}
-    </ul>
+  <h3 class="mb-3">Bài viết đã đăng</h3>
+  <ul class="list-group">
+    {% for post in posts %}
+      <li class="list-group-item">
+        <p>{{ post.content }}</p>
+        {% if post.media_url %}
+          <img src="{{ post.media_url }}" class="img-fluid mb-2" alt="Post media">
+        {% endif %}
+        <small class="text-muted">Ngày đăng: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </li>
+    {% endfor %}
+  </ul>
 </div>
+
 {% endblock %}

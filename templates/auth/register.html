@@ -2,20 +2,34 @@
 {% block title %}Đăng ký{% endblock %}
 
 {% block content %}
-<div class="register-page">
-<h2>Đăng ký</h2>
-<form method="POST">
-    <label>Username:</label><br>
-    <input type="text" name="username"><br><br>
+<div class="register-page container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+    <h4 class="text-center mb-3">Đăng ký tài khoản</h4>
 
-    <label>Email:</label><br>
-    <input type="email" name="email"><br><br>
+    <form method="POST">
+      <div class="mb-3">
+        <label for="username" class="form-label">Tên đăng nhập</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+      </div>
 
-    <label>Password:</label><br>
-    <input type="password" name="password"><br><br>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
 
-    <button type="submit">Đăng ký</button>
-</form>
-<p>Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p>
+      <div class="mb-3">
+        <label for="password" class="form-label">Mật khẩu</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
+
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary">Đăng ký</button>
+      </div>
+    </form>
+
+    <div class="text-center">
+      <p>Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -3,107 +3,110 @@
 
 {% block content %}
 <!-- HEADER -->
-<header class="header" style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ccc;">
-    <!-- Logo -->
-    <div class="logo" style="margin-right: 20px;">
-        <a href="{{ url_for('posts.feed') }}">
-            <img src="{{ url_for('static', filename='logo/parts-1086737_1920.png') }}" alt="Logo" style="height: 30px;">
-        </a>
-    </div>
+<header class="container-fluid border-bottom py-2 bg-white d-flex align-items-center pt-5">
+  <!-- Logo -->
+  <div class="me-3">
+    <a href="{{ url_for('posts.feed') }}">
+      <img src="{{ url_for('static', filename='logo/parts-1086737_1920.png') }}" alt="Logo" style="height: 30px;">
+    </a>
+  </div>
 
-    <!-- Thanh tìm kiếm -->
-    <div class="search-bar" style="flex: 1; max-width: 300px; margin-right: 20px;">
-        <form method="GET" action="{{ url_for('posts.feed') }}">
-            <input 
-                type="text" 
-                name="q" 
-                placeholder="Tìm bài viết, bạn bè..." 
-                style="width: 100%; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc;"
-            >
-        </form>
-    </div>
+  <!-- Thanh tìm kiếm -->
+  <div class="flex-grow-1 me-3" style="max-width: 300px;">
+    <form method="GET" action="{{ url_for('posts.feed') }}">
+      <input 
+        type="text" 
+        name="q" 
+        class="form-control" 
+        placeholder="Tìm bài viết, bạn bè..."
+      >
+    </form>
+  </div>
 
-    <!-- BÊN PHẢI: Các liên kết Trang chủ và Trò chơi -->
-    <div class="nav-links" style="display: flex; gap: 0px; align-items: center; margin-left: 450px;">
-        <!-- Logo Trang chủ -->
-        <a href="{{ url_for('posts.feed') }}">
-            <img src="{{ url_for('static', filename='logo/home.png') }}" alt="Logo trang chủ" style="height: 35px; margin-right: 10px;">
-        </a>
-
-        <!-- Logo Trò chơi -->
-        <a href="{{ url_for('games.games_home') }}">
-            <img src="{{ url_for('static', filename='logo/videogames.png') }}" alt="Logo Trò chơi" style="height: 35px; margin-left: 10px;">
-        </a>
-    </div>
+  <!-- Liên kết bên phải -->
+  <div class="d-flex align-items-center ms-auto gap-3">
+    <!-- Trò chơi -->
+    <a href="{{ url_for('games.games_home') }}">
+      <img src="{{ url_for('static', filename='logo/videogames.png') }}" alt="Trò chơi" style="height: 35px;">
+    </a>
+  </div>
 </header>
 
 <!-- NƠI HIỂN THỊ CÁC BÀI VIẾT -->
-<div class="feed-page" style="max-width: 600px; margin: 20px auto;">
+<div class="feed-page container pt-5" style="max-width: 600px;">
     <!-- Form tạo bài mới -->
-    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" style="margin-bottom: 20px;">
-        <textarea 
-            name="content" 
-            rows="3" 
-            placeholder="Bạn đang nghĩ gì?" 
-            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
-        ></textarea><br><br>
-        <input type="file" name="media_file"><br><br>
-        <button type="submit" style="padding: 8px 16px; border: none; background: #007BFF; color: white; border-radius: 4px;">Đăng</button>
+    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+            <textarea 
+                name="content" 
+                rows="3" 
+                placeholder="Bạn đang nghĩ gì?" 
+                class="form-control"
+            ></textarea>
+        </div>
+        <div class="mb-3">
+            <input type="file" name="media_file" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng</button>
     </form>
 
     <hr>
 
     {% if posts %}
         {% for item in posts %}
-            <div class="post" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
-                <!-- Thông tin tác giả -->
-                <div class="post-header" style="display: flex; align-items: center; margin-bottom: 10px;">
-                    <div class="avatar" style="margin-right: 10px;">
-                        {% if item.user.avatar_url %}
-                            <img 
-                                src="{{ item.user.avatar_url }}" 
-                                alt="{{ item.user.username }}" 
-                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
-                            >
-                        {% else %}
-                            <img 
-                                src="{{ url_for('static', filename='images/default-avatar.png') }}" 
-                                alt="Avatar mặc định" 
-                                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
-                            >
-                        {% endif %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <!-- Thông tin tác giả -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            {% if item.user.avatar_url %}
+                                <img 
+                                    src="{{ item.user.avatar_url }}" 
+                                    alt="{{ item.user.username }}" 
+                                    class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                >
+                            {% else %}
+                                <img 
+                                    src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                    alt="Avatar mặc định" 
+                                    class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                >
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-bold">{{ item.user.username }}</p>
+                            <small class="text-muted">{{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
                     </div>
-                    <div>
-                        <p style="margin: 0; font-weight: bold;">{{ item.user.username }}</p>
-                        <p style="margin: 0; font-size: 12px; color: #555;">{{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                    </div>
-                </div>
 
-                <!-- Nội dung bài viết -->
-                <div class="post-content" style="margin-bottom: 10px;">
-                    <p style="margin: 0 0 10px 0;">{{ item.post.content }}</p>
+                    <!-- Nội dung bài viết -->
+                    <p>{{ item.post.content }}</p>
                     {% if item.post.media_url %}
                         {% if item.post.media_url.endswith(".mp4") %}
-                            <video width="100%" controls style="border-radius: 4px;">
-                                <source src="{{ item.post.media_url }}" type="video/mp4">
-                            </video>
+                            <div class="mb-2">
+                                <video class="w-100 rounded" controls>
+                                    <source src="{{ item.post.media_url }}" type="video/mp4">
+                                </video>
+                            </div>
                         {% else %}
-                            <img src="{{ item.post.media_url }}" alt="media" style="width: 100%; border-radius: 4px;">
+                            <img src="{{ item.post.media_url }}" alt="media" class="img-fluid rounded mb-2">
                         {% endif %}
                     {% endif %}
-                </div>
 
-                <!-- Chân trang bài viết: bình luận, số lượt thích -->
-                <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #007BFF;">
-                    <a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
-                        Bình luận ({{ item.comment_count }})
-                    </a>
-                    <!-- Có thể thêm nút Thích, Chia sẻ -->
+                    <!-- Chân trang bài viết -->
+                    <div class="d-flex justify-content-between text-primary small">
+                        <a href="{{ url_for('posts.post_detail', post_id=item.post.post_id) }}">
+                            Bình luận ({{ item.comment_count }})
+                        </a>
+                        <!-- Bạn có thể thêm Like/Share sau đây -->
+                    </div>
                 </div>
             </div>
         {% endfor %}
     {% else %}
-        <p style="text-align: center; color: #555;">Chưa có bài viết nào.</p>
+        <p class="text-center text-muted">Chưa có bài viết nào.</p>
     {% endif %}
 </div>
 {% endblock %}

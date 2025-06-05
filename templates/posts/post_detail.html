@@ -3,39 +3,56 @@
 {% block title %}Chi tiết bài viết{% endblock %}
 
 {% block content %}
-<div class="post-detail-page">
-<h2>Chi tiết bài viết</h2>
-<div>
-    <p><strong>{{ author.username }}</strong> ({{ post.created_at.strftime('%Y-%m-%d %H:%M') }}):</p>
-    <p>{{ post.content }}</p>
-    {% if post.media_url %}
-    {% if post.media_url.endswith(".mp4") %}
-        <video width="300" controls>
-            <source src="{{ post.media_url }}" type="video/mp4">
-        </video>
-    {% else %}
-        <img src="{{ post.media_url }}" alt="media" width="200">
-    {% endif %}
-{% endif %}
+<div class="post-detail-page container py-4" style="max-width: 700px;">
+    <h2 class="mb-4">Chi tiết bài viết</h2>
 
-</div>
-<hr>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="mb-1">
+                <strong>{{ author.username }}</strong> 
+                <span class="text-muted">({{ post.created_at.strftime('%Y-%m-%d %H:%M') }})</span>
+            </p>
+            <p>{{ post.content }}</p>
 
-<h3>Bình luận</h3>
-{% for cmt, usr in comments %}
-    <div class="comment">
-        <p><strong>{{ usr }}</strong> ({{ cmt.created_at.strftime('%Y-%m-%d %H:%M') }}):</p>
-        <p>{{ cmt.content }}</p>
-        <hr>
+            {% if post.media_url %}
+                {% if post.media_url.endswith(".mp4") %}
+                    <video class="w-100 rounded my-2" controls>
+                        <source src="{{ post.media_url }}" type="video/mp4">
+                    </video>
+                {% else %}
+                    <img src="{{ post.media_url }}" alt="media" class="img-fluid rounded my-2" style="max-width: 100%;">
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
-{% else %}
-    <p>Chưa có bình luận nào.</p>
-{% endfor %}
 
-<form method="POST">
-    <textarea name="content" rows="2" cols="50" placeholder="Viết bình luận..."></textarea><br><br>
-    <button type="submit">Gửi bình luận</button>
-</form>
-<p><a href="{{ url_for('posts.feed') }}">← Quay về Feed</a></p>
+    <h4 class="mb-3">Bình luận</h4>
+
+    {% if comments %}
+        {% for cmt, usr in comments %}
+            <div class="mb-3">
+                <div class="border p-3 rounded">
+                    <p class="mb-1">
+                        <strong>{{ usr }}</strong> 
+                        <span class="text-muted">({{ cmt.created_at.strftime('%Y-%m-%d %H:%M') }})</span>
+                    </p>
+                    <p class="mb-0">{{ cmt.content }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Chưa có bình luận nào.</p>
+    {% endif %}
+
+    <form method="POST" class="mt-4">
+        <div class="mb-3">
+            <textarea name="content" rows="3" class="form-control" placeholder="Viết bình luận..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+    </form>
+
+    <div class="mt-4">
+        <a href="{{ url_for('posts.feed') }}" class="btn btn-link">← Quay về Feed</a>
+    </div>
 </div>
 {% endblock %}

@@ -2,98 +2,98 @@
 {% block title %}Tin nhắn{% endblock %}
 
 {% block content %}
-<div class="inbox-page">
-<h2>Hộp thư</h2>
+<div class="container my-4 inbox-page pt-3">
+  <h2 class="mb-4">Hộp thư</h2>
 
-<div style="display: flex;">
+  <div class="row">
     <!-- Danh sách Tin Nhắn Gần Đây -->
-    <div style="width: 30%; border-right: 1px solid #ccc; padding-right: 10px;">
-        <h4>Trò chuyện gần đây</h4>
+    <div class="col-md-4 border-end pe-3">
+      <h4>Trò chuyện gần đây</h4>
+      {% if conversations %}
+      <ul class="list-group">
         {% for conv in conversations %}
-        <div>
-            <a href="{{ url_for('messages.conversation', other_id=conv.other_id) }}">
+        <li class="list-group-item">
+          <a href="{{ url_for('messages.conversation', other_id=conv.other_id) }}" class="d-flex align-items-center text-decoration-none">
             <img 
-                src="{{ conv.other_avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
-                alt="{{ conv.other_username }}" 
-                style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;"
+              src="{{ conv.other_avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+              alt="{{ conv.other_username }}" 
+              class="rounded-circle me-2"
+              style="width: 40px; height: 40px; object-fit: cover;"
             >
-            {{ conv.other_username }} <br>
-            <small>{{ conv.last_msg[:20] }}… ({{ conv.timestamp.strftime('%Y-%m-%d %H:%M') }})</small>
-            </a>
-            <hr>
-        </div>
-        {% else %}
-        <p>Chưa có cuộc trò chuyện nào.</p>
+            <div>
+              <div class="fw-semibold">{{ conv.other_username }}</div>
+              <small class="text-muted">{{ conv.last_msg[:20] }}… ({{ conv.timestamp.strftime('%Y-%m-%d %H:%M') }})</small>
+            </div>
+          </a>
+        </li>
         {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">Chưa có cuộc trò chuyện nào.</p>
+      {% endif %}
     </div>
 
     <!-- Nội dung Chat hoặc Tạo mới -->
-    <div style="width: 70%; padding-left: 10px;">
-    {% if other %}
-    <h4>Chat với {{ other.username }}</h4>
-    <div id="chat-window" style="height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 5px;">
+    <div class="col-md-8 ps-3">
+      {% if other %}
+      <h4>Chat với {{ other.username }}</h4>
+      <div id="chat-window" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f9f9f9;">
         {% for msg in conversation %}
-        {% if msg.sender_id == session.user_id %}
+          {% if msg.sender_id == session.user_id %}
             <!-- Tin nhắn do chính bạn gửi -->
-            <div style="text-align: right; margin-bottom: 10px;">
-            <p style="display: inline-block; background-color: #dcf8c6; padding: 5px 10px; border-radius: 10px;">
-                <strong>{{ session.username }}:</strong> {{ msg.content }}<br>
-                <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small><br>
-                <small style="color: {% if msg.is_read %}green{% else %}gray{% endif %}; font-style: italic;">
-                {% if msg.is_read %}Đã xem{% else %}Đã gửi{% endif %}
-                </small>
-            </p>
-            <br>
-            <!-- Avatar của chính bạn, kh cần bỏ
-            <img 
-                src="{{ session.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
-                alt="{{ session.username }}" 
-                style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-top: 5px;"
-            >
-            -->
+            <div class="d-flex justify-content-end mb-3">
+              <div class="text-end">
+                <div class="d-inline-block bg-success bg-opacity-25 text-success p-2 rounded">
+                  <strong>{{ session.username }}:</strong> {{ msg.content }}
+                </div>
+                <div>
+                  <small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small><br>
+                  <small class="fst-italic" style="color: {% if msg.is_read %}green{% else %}gray{% endif %};">
+                    {% if msg.is_read %}Đã xem{% else %}Đã gửi{% endif %}
+                  </small>
+                </div>
+              </div>
             </div>
-        {% else %}
+          {% else %}
             <!-- Tin nhắn của người kia -->
-            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-            <!-- Avatar của người kia -->
-            <img 
+            <div class="d-flex align-items-start mb-3 gap-2">
+              <img 
                 src="{{ other.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
                 alt="{{ other.username }}" 
-                style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-top: 5px;"
-            >
-            <div style="background-color: #f1f0f0; padding: 5px 10px; border-radius: 10px;">
-                <p>
+                class="rounded-circle"
+                style="width: 40px; height: 40px; object-fit: cover;"
+              >
+              <div class="bg-light p-2 rounded">
                 <strong>{{ other.username }}:</strong> {{ msg.content }}<br>
-                <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                </p>
+                <small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+              </div>
             </div>
-            </div>
-        {% endif %}
+          {% endif %}
         {% endfor %}
-    </div>
+      </div>
 
-    <!-- Phần form gửi tin -->
-    <form id="chat-form" method="POST">
-        <textarea id="message-input" name="content" rows="2" cols="50" placeholder="Nhập tin nhắn..."></textarea><br>
-        <button type="submit">Gửi</button>
-    </form>
-    {% else %}
-    <!-- Phần tạo tin nhắn mới nếu không có 'other' -->
-    <h4>Tạo tin nhắn mới</h4>
-    <form method="POST">
-        <label>Gửi đến:</label>
-        <select name="to_id">
-        {% for u in all_users %}
-            <option value="{{ u.user_id }}">{{ u.username }}</option>
-        {% endfor %}
-        </select><br><br>
-        <textarea name="content" rows="3" cols="50" placeholder="Nội dung..."></textarea><br><br>
-        <button type="submit">Gửi</button>
-    </form>
-    {% endif %}
+      <!-- Phần form gửi tin -->
+      <form id="chat-form" method="POST" class="d-flex gap-2">
+        <textarea id="message-input" name="content" class="form-control" rows="2" placeholder="Nhập tin nhắn..."></textarea>
+        <button type="submit" class="btn btn-primary">Gửi</button>
+      </form>
 
+      {% else %}
+      <!-- Phần tạo tin nhắn mới nếu không có 'other' -->
+      <h4>Tạo tin nhắn mới</h4>
+      <form method="POST" class="d-flex flex-column gap-3">
+        <label for="to_id" class="form-label">Gửi đến:</label>
+        <select name="to_id" id="to_id" class="form-select w-auto">
+          {% for u in all_users %}
+          <option value="{{ u.user_id }}">{{ u.username }}</option>
+          {% endfor %}
+        </select>
+        <textarea name="content" rows="3" class="form-control" placeholder="Nội dung..."></textarea>
+        <button type="submit" class="btn btn-primary align-self-start">Gửi</button>
+      </form>
+      {% endif %}
     </div>
-</div>
+  </div>
 </div>
 
 {% if other %}
@@ -102,8 +102,8 @@
 
 <!-- Biến toàn cục cho JS -->
 <script>
-    window.SENDER_ID = {{ session.user_id }};
-    window.RECEIVER_ID = {{ other.user_id }};
+    window.SENDER_ID = "{{ session.user_id }}";
+    window.RECEIVER_ID = "{{ other.user_id }}";
     window.SENDER_USERNAME = "{{ session.username }}";
     window.RECEIVER_USERNAME = "{{ other.username }}";
 </script>

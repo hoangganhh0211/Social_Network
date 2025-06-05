@@ -2,47 +2,67 @@
 {% block title %}Bạn bè{% endblock %}
 
 {% block content %}
-<div class="friends-page">
-<h2>Danh sách bạn bè</h2>
+<div class="container my-4 friends-page pt-3">
+  <h2 class="mb-4">Danh sách bạn bè</h2>
 
-<h3>Yêu cầu kết bạn đến bạn</h3>
-{% for u in requests %}
-    <div>
-        {{ u.username }}
-        <form method="POST" action="{{ url_for('friends.accept_request', from_id=u.user_id) }}" style="display:inline">
-            <button type="submit">Chấp nhận</button>
-        </form>
-    </div>
-{% else %}
-    <p>Chưa có yêu cầu nào.</p>
-{% endfor %}
-<hr>
+  <h3>Yêu cầu kết bạn đến bạn</h3>
+  {% if requests %}
+  <ul class="list-group mb-4">
+    {% for u in requests %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ u.username }}
+      <form method="POST" action="{{ url_for('friends.accept_request', from_id=u.user_id) }}" class="m-0">
+        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted mb-4">Chưa có yêu cầu nào.</p>
+  {% endif %}
 
-<h3>Bạn bè hiện có</h3>
-{% for u in friends %}
-    <div>
-        {{ u.username }}
-        <form method="POST" action="{{ url_for('friends.remove_friend', friend_id=u.user_id) }}" style="display:inline">
-            <button type="submit">Xóa bạn</button>
-        </form>
-    </div>
-{% else %}
-    <p>Chưa có bạn bè nào.</p>
-{% endfor %}
-<hr>
+  <hr>
 
-<h3>Gửi lời mời kết bạn</h3>
-{% for u in all_users %}
-    {% if u not in friends and u not in requests %}
-        <div>
-            {{ u.username }}
-            <form method="POST" action="{{ url_for('friends.send_request', to_id=u.user_id) }}" style="display:inline">
-                <button type="submit">Kết bạn</button>
-            </form>
-        </div>
+  <h3>Bạn bè hiện có</h3>
+  {% if friends %}
+  <ul class="list-group mb-4">
+    {% for u in friends %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ u.username }}
+      <form method="POST" action="{{ url_for('friends.remove_friend', friend_id=u.user_id) }}" class="m-0">
+        <button type="submit" class="btn btn-sm btn-danger">Xóa bạn</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted mb-4">Chưa có bạn bè nào.</p>
+  {% endif %}
+
+  <hr>
+
+  <h3>Gửi lời mời kết bạn</h3>
+  {% set sent_or_friends = friends | map(attribute='user_id') | list + requests | map(attribute='user_id') | list %}
+  {% if all_users %}
+  <ul class="list-group">
+    {% set found = false %}
+    {% for u in all_users %}
+      {% if u.user_id not in sent_or_friends %}
+        {% set found = true %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ u.username }}
+          <form method="POST" action="{{ url_for('friends.send_request', to_id=u.user_id) }}" class="m-0">
+            <button type="submit" class="btn btn-sm btn-primary">Kết bạn</button>
+          </form>
+        </li>
+      {% endif %}
+    {% endfor %}
+    {% if not found %}
+      <p class="text-muted">Không có người dùng nào khác.</p>
     {% endif %}
-{% else %}
-    <p>Không có người dùng nào khác.</p>
-{% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted">Không có người dùng nào khác.</p>
+  {% endif %}
 </div>
 {% endblock %}
