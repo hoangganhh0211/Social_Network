@@ -6,12 +6,16 @@
 
 <div class="d-flex justify-content-center flex-wrap gap-4 mt-4">
   <a href="{{ url_for('games.game1') }}" class="text-center text-decoration-none text-dark">
-    <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 1" class="mb-2">
+    <img src="{{ url_for('static', filename='logo/logo_game_play_1.png') }}" width="100" alt="Game 1" class="mb-2">
     <div>Bắt bóng</div>
   </a>
   <a href="{{ url_for('games.game2') }}" class="text-center text-decoration-none text-dark">
-    <img src="{{ url_for('static', filename='logo/videogames.png') }}" width="100" alt="Game 2" class="mb-2">
+    <img src="{{ url_for('static', filename='logo/logo_game_play_2.png') }}" width="100" alt="Game 2" class="mb-2">
     <div>Hứng Trứng Gà</div>
+  </a>
+    <a href="{{ url_for('games.game3') }}" class="text-center text-decoration-none text-dark">
+    <img src="{{ url_for('static', filename='logo/logo_game_play_3.png') }}" width="100" alt="Game 3" class="mb-2">
+    <div>Dodge&Shoot</div>
   </a>
 </div>
 {% endblock %}

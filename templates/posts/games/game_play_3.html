@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Trò chơi Bắn Đá{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-4 pt-4">Dodge&Shoot</h2>
+
+<div class="d-flex flex-column align-items-center">
+  <canvas id="gameCanvas" width="600" height="400" class="border border-dark"></canvas>
+  
+  <p id="score" class="mt-3 fw-bold">Điểm: 0</p>
+  
+  <p id="gameOverText" class="text-danger fw-bold" style="display: none;">
+    Game Over! Nhấn Enter để chơi lại.
+  </p>
+  
+  <p>
+    <a href="{{ url_for('games.games_home') }}" class="text-decoration-none">
+      ⬅️ Quay lại danh sách trò chơi
+    </a>
+  </p>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Dùng url_for để lấy đúng đường dẫn folder static
+    const basePath = "{{ url_for('static', filename='assets/game_play_3/assets') }}";
+
+    // Load ảnh nền
+    const bgImage = new Image();
+    bgImage.src = `${basePath}/Background/Bg_001.png`;
+
+    // Load ảnh phi thuyền
+    const shipImg = new Image();
+    shipImg.src = `${basePath}/images/rockets/spaceRockets_001.png`;
+
+    // Load ảnh đạn
+    const bulletImg = new Image();
+    bulletImg.src = `${basePath}/images/rockets/a1.png`;
+
+    // Load ảnh thiên thạch
+    const asteroidImg = new Image();
+    asteroidImg.src = `${basePath}/images/vat_the/spaceMeteors_001.png`;
+
+    // Kích thước ship
+    const shipWidth = 40;
+    const shipHeight = 20;
+    let shipX = (canvas.width - shipWidth) / 2;
+    const shipY = canvas.height - shipHeight - 10;
+    const shipSpeed = 5;
+
+    // Kích thước đạn
+    const bulletWidth = 8;
+    const bulletHeight = 16;
+    const bulletSpeed = 6;
+    let bullets = []; // mảng { x, y }
+
+    // Thiên thạch
+    const asteroids = []; // mảng { x, y, size, speed }
+    const asteroidMinSize = 15;
+    const asteroidMaxSize = 30;
+    const asteroidSpeedMin = 2;
+    const asteroidSpeedMax = 5;
+    let asteroidSpawnInterval;
+
+    let rightPressed = false;
+    let leftPressed = false;
+    let spacePressed = false;
+
+    let score = 0;
+    let gameOver = false;
+
+    const scoreText = document.getElementById("score");
+    const gameOverText = document.getElementById("gameOverText");
+
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    function keyDownHandler(e) {
+        if (e.key === "ArrowRight" || e.key === "Right") {
+            rightPressed = true;
+        } else if (e.key === "ArrowLeft" || e.key === "Left") {
+            leftPressed = true;
+        } else if (e.key === " " || e.key === "Spacebar") {
+            spacePressed = true;
+        } else if (e.key === "Enter" && gameOver) {
+            location.reload();
+        }
+    }
+
+    function keyUpHandler(e) {
+        if (e.key === "ArrowRight" || e.key === "Right") {
+            rightPressed = false;
+        } else if (e.key === "ArrowLeft" || e.key === "Left") {
+            leftPressed = false;
+        } else if (e.key === " " || e.key === "Spacebar") {
+            spacePressed = false;
+        }
+    }
+
+    function drawBackground() {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawShip() {
+        ctx.drawImage(shipImg, shipX, shipY, shipWidth, shipHeight);
+    }
+
+    function drawBullet(b) {
+        ctx.drawImage(bulletImg, b.x, b.y, bulletWidth, bulletHeight);
+    }
+
+    function drawAsteroid(a) {
+        ctx.drawImage(
+            asteroidImg,
+            a.x - a.size,
+            a.y - a.size,
+            a.size * 2,
+            a.size * 2
+        );
+    }
+
+    function spawnAsteroid() {
+        const size = Math.random() * (asteroidMaxSize - asteroidMinSize) + asteroidMinSize;
+        const x = Math.random() * (canvas.width - 2 * size) + size;
+        const y = -size;
+        const speed = Math.random() * (asteroidSpeedMax - asteroidSpeedMin) + asteroidSpeedMin;
+        asteroids.push({ x, y, size, speed });
+    }
+
+    function updateEntities() {
+        // Cập nhật vị trí ship
+        if (rightPressed && shipX < canvas.width - shipWidth) {
+            shipX += shipSpeed;
+        }
+        if (leftPressed && shipX > 0) {
+            shipX -= shipSpeed;
+        }
+
+        // Bắn đạn
+        if (spacePressed) {
+            if (bullets.length < 5) {
+                const bx = shipX + shipWidth / 2 - bulletWidth / 2;
+                const by = shipY;
+                bullets.push({ x: bx, y: by });
+            }
+            spacePressed = false;
+        }
+
+        // Cập nhật đạn
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].y -= bulletSpeed;
+            if (bullets[i].y + bulletHeight < 0) {
+                bullets.splice(i, 1);
+            }
+        }
+
+        // Cập nhật thiên thạch
+        for (let i = asteroids.length - 1; i >= 0; i--) {
+            asteroids[i].y += asteroids[i].speed;
+            if (asteroids[i].y - asteroids[i].size > canvas.height) {
+                endGame();
+                return;
+            }
+        }
+
+        // Va chạm đạn với thiên thạch
+        for (let i = asteroids.length - 1; i >= 0; i--) {
+            const a = asteroids[i];
+            for (let j = bullets.length - 1; j >= 0; j--) {
+                const b = bullets[j];
+                if (
+                    b.x < a.x + a.size &&
+                    b.x + bulletWidth > a.x - a.size &&
+                    b.y < a.y + a.size &&
+                    b.y + bulletHeight > a.y - a.size
+                ) {
+                    // Xóa cả hai
+                    asteroids.splice(i, 1);
+                    bullets.splice(j, 1);
+                    score++;
+                    scoreText.textContent = "Điểm: " + score;
+                    break;
+                }
+            }
+        }
+
+        // Va chạm ship với thiên thạch
+        for (let i = asteroids.length - 1; i >= 0; i--) {
+            const a = asteroids[i];
+            if (
+                shipX < a.x + a.size &&
+                shipX + shipWidth > a.x - a.size &&
+                shipY < a.y + a.size &&
+                shipY + shipHeight > a.y - a.size
+            ) {
+                endGame();
+                return;
+            }
+        }
+    }
+
+    function drawAll() {
+        if (gameOver) return;
+
+        drawBackground();
+        drawShip();
+
+        bullets.forEach(drawBullet);
+        asteroids.forEach(drawAsteroid);
+
+        updateEntities();
+        requestAnimationFrame(drawAll);
+    }
+
+    function startGame() {
+        score = 0;
+        gameOver = false;
+        bullets = [];
+        asteroids.length = 0;
+        shipX = (canvas.width - shipWidth) / 2;
+        scoreText.textContent = "Điểm: 0";
+        gameOverText.style.display = "none";
+
+        asteroidSpawnInterval = setInterval(() => {
+            if (!gameOver) {
+                spawnAsteroid();
+            }
+        }, 800);
+
+        drawAll();
+    }
+
+    function endGame() {
+        gameOver = true;
+        clearInterval(asteroidSpawnInterval);
+        gameOverText.style.display = "block";
+        updateShareMessage();
+    }
+
+    window.onload = startGame;
+
+    // Cập nhật form chia sẻ điểm và bật hiển thị khi Game Over
+    function updateShareMessage() {
+        const shareContainer = document.getElementById("share-container");
+        const shareContent = document.getElementById("share-content");
+        if (!shareContainer || !shareContent) return;
+
+        shareContent.value = `Tớ vừa đạt ${score} điểm trong trò chơi Bắn Đá! Chơi thử tại: http://127.0.0.1:5000/games/`;
+        shareContainer.style.display = "block";
+    }
+</script>
+
+<!-- Form chia sẻ điểm -->
+{% include 'includes/score_share_form.html' %}
+{% endblock %}
