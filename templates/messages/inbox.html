@@ -88,7 +88,7 @@
     <h4>Tạo tin nhắn mới</h4>
     <form action="{{ url_for('messages.send_message') }}" method="POST">
         <label>Gửi đến:</label>
-        <select name="to_id">
+        <select name="receiver_id">
         {% for u in all_users %}
             <option value="{{ u.user_id }}">{{ u.username }}</option>
         {% endfor %}

@@ -61,18 +61,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Xử lý gửi tin nhắn
     const form = document.getElementById("chat-form");
-    form?.addEventListener("submit", (e) => {
+    form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const input = document.getElementById("message-input");
         const content = input.value.trim();
         if (!content) return;
 
+        // 1. Gửi qua socket 
         socket.emit("send_message", {
             sender_id: senderId,
             receiver_id: receiverId,
             content: content,
             room: roomName
         });
+
+        // 2. Đồng thời gửi POST để Flask lưu Message & Notification
+        const formData = new FormData();
+        formData.append("receiver_id", receiverId);
+        formData.append("content", content);
+        try {
+            await fetch("/messages/send", {
+                method: "POST",
+                body: formData,
+                credentials: "same-origin"
+        });
+        } catch (err) {
+        console.error("Không thể lưu notification:", err);
+        }
 
         input.value = "";
     });

@@ -168,7 +168,7 @@ def send_score():
 @login_required
 def send_message():
     # 1. Lấy dữ liệu từ form
-    receiver_id = request.form.get('to_id', type=int)
+    receiver_id = request.form.get('receiver_id')
     message_content = request.form.get('content', type=str)
 
     # 2. Kiểm tra xem có đầy đủ không
@@ -187,14 +187,16 @@ def send_message():
 
     notif = Notification(
         user_id=receiver_id,
-        notif_type='message',
-        content=f"{sender.username} đã gửi cho bạn một tin nhắn.",
-         reference_id=sender.user_id
+        notif_type='new_message',
+        content=f"{current_user.username} đã gửi cho bạn một tin nhắn.",
+        reference_id=current_user.user_id
     )
     db.session.add(notif)
     db.session.commit()
+    # Kiểm tra dữ liệu có đc lưu vào db k
 
     return redirect(url_for('messages.inbox'))
+
 
 # ------------------- Phần xử lý Socket.IO -------------------
 
