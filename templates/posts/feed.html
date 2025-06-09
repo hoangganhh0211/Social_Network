@@ -32,15 +32,15 @@
 <!-- NƠI HIỂN THỊ CÁC BÀI VIẾT -->
 <div class="feed-page" style="max-width: 600px; margin: 20px auto;">
     <!-- Form tạo bài mới -->
-    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" style="margin-bottom: 20px;">
+    <form method="POST" action="{{ url_for('posts.create_post') }}" enctype="multipart/form-data" class="d-flex flex-column gap-3" >
         <textarea 
             name="content" 
-            rows="3" 
+            rows="5" 
             placeholder="Bạn đang nghĩ gì?" 
-            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
-        ></textarea><br><br>
-        <input type="file" name="media_file"><br><br>
-        <button type="submit" style="padding: 8px 16px; border: none; background: #007BFF; color: white; border-radius: 4px;">Đăng</button>
+            class="form-control"
+        ></textarea>
+        <input type="file" class="form-control" name="media_file">
+        <button type="submit" class="btn btn-primary">Đăng</button>
     </form>
 
     <hr>
