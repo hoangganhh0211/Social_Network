@@ -4,6 +4,8 @@ from flask import render_template, request, redirect, url_for, session, flash, c
 from werkzeug.utils import secure_filename
 from models import User, Post
 from extensions import db
+from flask import abort
+
 
 from flask import Blueprint
 profile_bp = Blueprint("profile", __name__)
@@ -44,4 +46,21 @@ def upload_avatar():
     else:
         flash("Tập tin không hợp lệ.")
     
+    return redirect(url_for("profile.view_profile", user_id=session["user_id"]))
+
+# Mới: Xoá bài đăng của chính người dùng
+@profile_bp.route("/delete_post/<int:post_id>", methods=["POST"])
+def delete_post(post_id):
+    if "user_id" not in session:
+        flash("Bạn cần đăng nhập trước.")
+        return redirect(url_for("auth.login"))
+
+    post = Post.query.get_or_404(post_id)
+    # Chỉ cho phép xóa bài của chính chủ
+    if post.user_id != session["user_id"]:
+        abort(403)
+
+    db.session.delete(post)
+    db.session.commit()
+    flash("Đã xoá bài viết thành công.")
     return redirect(url_for("profile.view_profile", user_id=session["user_id"]))

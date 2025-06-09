@@ -3,5 +3,5 @@ Trang web mạng xã hội
 Xây dựng một trang web mạng xã hội mini cho phép người dùng có thể đăng bài, chơi game, kết bạn, nhắn tin với nhau.
 
 git add .
-git commit -m "Update Logo"
+git commit -m "Update delete posts"
 git push origin main

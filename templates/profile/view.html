@@ -29,6 +29,9 @@
           <img src="{{ post.media_url }}" class="img-fluid mb-2" alt="Post media">
         {% endif %}
         <small class="text-muted">Ngày đăng: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        <form action="{{ url_for('profile.delete_post', post_id=post.post_id) }}" method="post" style="display:inline; margin-left: 5px;">
+          <button type="submit" onclick="return confirm('Xác nhận xóa bài viết?')">Xóa</button>
+        </form>
       </li>
     {% endfor %}
   </ul>
