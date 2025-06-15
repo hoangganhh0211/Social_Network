@@ -11,12 +11,17 @@ from modules.notifications.routes import notifications_bp
 from config import Config  # import cấu hình
 from extensions import socketio
 
+from flask_socketio import join_room
+
 #
 from modules.posts import register_posts_blueprints
 
 app = Flask(__name__)
 migrate = Migrate()
 app.config.from_object(Config)  # load config từ class Config
+
+# Socket cho notifications
+socketio.init_app(app, cors_allowed_origins="*")
 
 # Thiết lập Flask-Login
 login_manager.login_view = 'auth.login'
@@ -54,8 +59,12 @@ def index():
         return redirect(url_for("posts.feed"))
     return redirect(url_for("auth.login"))
 
+@socketio.on('join')
+def on_join(data):
+    join_room(data['room'])
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    # Dùng socketio.run thay vì app.run để hỗ trợ websocket
+    # Dùng socketio.run hỗ trợ websocket
     socketio.run(app, debug=True)

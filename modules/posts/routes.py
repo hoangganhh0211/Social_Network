@@ -118,6 +118,9 @@ def create_post():
     
     # Danh sách người đc gửi tb
     all_users = User.query.filter(User.user_id != current_user.user_id).all()
+    
+    # URL cho bài post mới
+    post_url = url_for("posts.post_detail", post_id=new_post.post_id) # trỏ về post_detail
 
     # Tạo Notification cho mỗi user
     notifications = []
@@ -126,7 +129,8 @@ def create_post():
             user_id=u.user_id,
             notif_type='new_post',
             content=f"{current_user.username} vừa đăng bài mới.",
-            reference_id=current_user.user_id  # để người dùng click notification có thể redirect tới bài post đó
+            reference_id=current_user.user_id,
+            link=post_url # để người dùng click notification có thể redirect tới bài post đó
         )
         notifications.append(notif)
     

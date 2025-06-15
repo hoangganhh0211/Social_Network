@@ -5,6 +5,10 @@
     <title>{% block title %}Social Network{% endblock %}</title>
     <!-- Nhúng Bootstrap CSS từ CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <!-- Nhúng Bootstrap Icons để dùng icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Nhúng Socket.IO client -->
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -12,63 +16,59 @@
             Social Network
         </a>
         {% if session.user_id %}
-            <!-- Các link chính -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="margin-left: 820px;">
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('posts.feed') }}">Feed</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('friends.friends_list') }}">Bạn bè</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('messages.inbox') }}">Tin nhắn</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('profile.view_profile', user_id=session.user_id) }}">Hồ Sơ</a></li>
-                <li class="nav-item">
+                <li class="nav-item dropdown">
+                    
                     <!-- Dropdown Notifications -->
-                    <div class="nav-link dropdown">
-                        <a class="dropdown-toggle position-relative" href="#" id="notifDropdown" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
-                            {% if g.unread_notif_count and g.unread_notif_count > 0 %}
-                                <!-- Hiển thị số thông báo chưa đọc (badge) -->
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ g.unread_notif_count }}
-                                    <span class="visually-hidden">Chưa đọc</span>
-                                </span>
-                            {% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifDropdown" style="min-width: 300px;">
-                            <li class="dropdown-header">Thông báo mới nhất</li>
-                            {% if g.latest_notifications %}
-                                {% for notif in g.latest_notifications %}
-                                    <li>
-                                        <a class="dropdown-item d-flex justify-content-between align-items-start" 
-                                           href="{{ url_for('notifications.mark_read', notif_id=notif.notification_id) }}">
-                                            <div>
-                                                <!-- Ví dụ hiển thị icon theo loại -->
-                                                {% if notif.notif_type == 'message' %}
-                                                    <i class="bi bi-chat-left-text me-2"></i>
-                                                {% elif notif.notif_type == 'post_like' %}
-                                                    <i class="bi bi-hand-thumbs-up me-2"></i>
-                                                {% elif notif.notif_type == 'comment' %}
-                                                    <i class="bi bi-chat-right-text me-2"></i>
-                                                {% else %}
-                                                    <i class="bi bi-info-circle me-2"></i>
-                                                {% endif %}
-                                                <span class="{% if not notif.is_read %}fw-bold{% endif %}">
-                                                    {{ notif.content }}
-                                                </span>
-                                            </div>
-                                            <small class="text-muted">{{ notif.created_at.strftime('%H:%M %d/%m/%Y') }}</small>
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endfor %}
+                    <a class="nav-link dropdown-toggle position-relative" href="#" id="notifDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
+                        {% if g.unread_notif_count and g.unread_notif_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notif-badge">
+                                {{ g.unread_notif_count }}
+                                <span class="visually-hidden">Chưa đọc</span>
+                            </span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifDropdown" style="min-width: 300px;">
+                        <li class="dropdown-header">Thông báo mới nhất</li>
+                        {% if g.latest_notifications %}
+                            {% for notif in g.latest_notifications %}
                                 <li>
-                                    <a class="dropdown-item text-center" href="{{ url_for('notifications.all_notifications') }}">
-                                        Xem tất cả
+                                    <a class="dropdown-item d-flex justify-content-between align-items-start"
+                                       href="{{ notif.link }}">
+                                        <div>
+                                            {% if notif.notif_type in ['message', 'new_message'] %}
+                                                <i class="bi bi-chat-left-text me-2"></i>
+                                            {% elif notif.notif_type == 'new_post' %}
+                                                <i class="bi bi-file-post me-2"></i>
+                                            {% elif notif.notif_type == 'comment' %}
+                                                <i class="bi bi-chat-right-text me-2"></i>
+                                            {% else %}
+                                                <i class="bi bi-info-circle me-2"></i>
+                                            {% endif %}
+                                            <span class="{% if not notif.is_read %}fw-bold{% endif %}">
+                                                {{ notif.content }}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">{{ notif.created_at.strftime('%H:%M %d/%m/%Y') }}</small>
                                     </a>
                                 </li>
-                            {% else %}
-                                <li><span class="dropdown-item text-center text-muted">Không có thông báo</span></li>
-                            {% endif %}
-                        </ul>
-                    </div>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endfor %}
+                            <li>
+                                <a class="dropdown-item text-center" href="{{ url_for('notifications.all_notifications') }}">
+                                    Xem tất cả
+                                </a>
+                            </li>
+                        {% else %}
+                            <li><span class="dropdown-item text-center text-muted">Không có thông báo</span></li>
+                        {% endif %}
+                    </ul>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Đăng xuất ({{ session.username }})</a></li>
             </ul>
@@ -80,9 +80,8 @@
         {% endif %}
     </nav>
     <hr>
-    <!-- Block nav phụ, cho bài đăng và trò chơi -->
     {% block subnav %}{% endblock %}
-    <div class="container">
+    <div class="container" style="margin-top: 80px;">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, msg in messages %}
@@ -94,10 +93,45 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Nhúng Bootstrap JS (và dependency Popper) nếu cần dropdown hoạt động -->
+    <!-- Nhúng Popper & Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <!-- Nhúng Bootstrap Icons nếu muốn dùng icon -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Socket.IO client xử lý realtime -->
+    <script>
+        const socket = io();
+        // Join room user cụ thể
+        socket.on('connect', () => {
+            socket.emit('join', { room: 'user_{{ session.user_id }}' });
+        });
+
+        socket.on('new_notification', (data) => {
+            // Cập nhật badge
+            let badge = document.getElementById('notif-badge');
+            let count = badge ? parseInt(badge.innerText) + 1 : 1;
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.id = 'notif-badge';
+                badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                document.querySelector('#notifDropdown').appendChild(badge);
+            }
+            badge.innerText = count;
+
+            // Thêm thông báo mới lên đầu dropdown list
+            const ul = document.querySelector('.dropdown-menu-end');
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <a class="dropdown-item d-flex justify-content-between align-items-start" href="${data.link}">
+                    <div>
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span class="fw-bold">${data.content}</span>
+                    </div>
+                    <small class="text-muted">${new Date(data.created_at).toLocaleString()}</small>
+                </a>
+                <hr class="dropdown-divider">
+            `;
+            ul.insertBefore(li, ul.children[1]);
+        });
+    </script>
 </body>
 </html>

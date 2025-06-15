@@ -1,1 +1,12 @@
-<h2>All</h2>
+<!-- templates/notifications/all.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Thông báo</h2>
+<ul>
+  {% for notif in notifications %}
+    <li class="{{ 'font-weight-bold' if not notif.is_read else '' }}">
+      <a href="{{ notif.link }}">{{ notif.content }}</a> - {{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

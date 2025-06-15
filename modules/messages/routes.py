@@ -168,13 +168,16 @@ def send_score():
 @login_required
 def send_message():
     # 1. Lấy dữ liệu từ form
-    receiver_id = request.form.get('receiver_id')
+    receiver_id = int(request.form.get('receiver_id')) # ép kiểu int để chỉ nhận id người nhận là 1,2,3...
     message_content = request.form.get('content', type=str)
 
     # 2. Kiểm tra xem có đầy đủ không
     if not receiver_id or not message_content:
         flash("Vui lòng chọn người nhận và nhập nội dung.", 'warning')
         return redirect(url_for('messages.inbox'))
+    
+    # Lưu link người nhận trỏ đến người gửi
+    chat_url = url_for('messages.conversation', other_id=current_user.user_id)
 
     # 3. Tạo đối tượng Message, rồi Notification
     msg = Message(
@@ -189,6 +192,7 @@ def send_message():
         user_id=receiver_id,
         notif_type='new_message',
         content=f"{current_user.username} đã gửi cho bạn một tin nhắn.",
+        link=chat_url,
         reference_id=current_user.user_id
     )
     db.session.add(notif)

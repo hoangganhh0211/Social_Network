@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, BOOLEAN, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, BOOLEAN, ForeignKey, DateTime , Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from extensions import db
 from flask_login import UserMixin
+from datetime import datetime
 
 # Bảng Lưu thông tin người dùng
 class User(db.Model, UserMixin):
@@ -84,14 +85,41 @@ class Message(db.Model):
     
 class Notification(db.Model):
     __tablename__ = 'notifications'
+
     notification_id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)   # người nhận thông báo
-    # Loại thông báo
+    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     notif_type = Column(String(50), nullable=False)
     content = Column(Text, nullable=False)
+    # id của tin nhắn, bài viết
     reference_id = Column(Integer, nullable=True)
-    is_read = Column(BOOLEAN, default=False)
-    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+    # Link trỏ 
+    link = Column(String(255), nullable=True)
+    is_read = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Quan hệ với User để dễ join
     user = relationship('User', back_populates='notifications')
+
+    def mark_as_read(self):
+        """Đánh dấu thông báo đã đọc"""
+        if not self.is_read:
+            self.is_read = True
+            db.session.add(self)
+            db.session.commit()
+
+    @property
+    def url(self):
+        """Tạo link đầy đủ cho thông báo"""
+        return self.link or '#'
+
+    def to_dict(self):
+        """Chuẩn hóa dữ liệu gửi qua Socket.IO"""
+        return {
+            'notification_id': self.notification_id,
+            'user_id': self.user_id,
+            'type': self.notif_type,
+            'content': self.content,
+            'reference_id': self.reference_id,
+            'link': self.url,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat()
+        }
