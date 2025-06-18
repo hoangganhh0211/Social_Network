@@ -68,3 +68,4 @@ if __name__ == "__main__":
         db.create_all()
     # Dùng socketio.run hỗ trợ websocket
     socketio.run(app, debug=True)
+    print("🚀 Flask server started")

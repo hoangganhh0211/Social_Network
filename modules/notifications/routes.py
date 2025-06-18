@@ -32,27 +32,47 @@ def all_notifications():
                     .order_by(desc(Notification.created_at)).all()
     return render_template('notifications/all.html', notifications=all_notifs)
 
-# 
+# Route để đánh dấu thông báo là đã đọc, chuyển hướngứ
+from flask import request
+
 @notifications_bp.route('/mark_read/<int:notif_id>')
 def mark_read(notif_id):
+    next_url = request.args.get('next') or url_for('notifications.all_notifications')
     notif = Notification.query.get_or_404(notif_id)
     if notif.user_id != current_user.user_id:
         abort(403)
     notif.is_read = True
     db.session.commit()
-    return redirect(url_for('notifications.all_notifications'))
+    return redirect(next_url)
 
 # Helper để tạo thông báo và emit realtime
-def notify_user(user_id, content, link_endpoint, notif_type='info', reference_id=None):
-    # link_endpoint là tên endpoint, ví dụ 'posts.feed'
-    link = url_for(link_endpoint, _external=False)
+def notify_user(user_id, content, link_endpoint, notif_type='info', reference_id=None, **url_kwargs):
+    # Tạo URL đích (chat)
+    target = url_for(link_endpoint, _external=False, **url_kwargs)
+    # Tạo URL mark_read với query next=target
+    mark_link = url_for(
+        'notifications.mark_read',
+        notif_id=0,            # sẽ set phía dưới
+        next=target,
+        _external=False
+    )
+    # Tạo Notification mà chưa commit để lấy id
     notif = Notification(
         user_id=user_id,
         content=content,
-        link=link,
+        link=mark_link,       # tạm thời chưa đúng id
         notif_type=notif_type,
         reference_id=reference_id
     )
     db.session.add(notif)
+    db.session.flush()        # để notif.notification_id có giá trị
+    # Cập nhật lại link với đúng notif_id
+    notif.link = url_for(
+        'notifications.mark_read',
+        notif_id=notif.notification_id,
+        next=target,
+        _external=False
+    )
     db.session.commit()
     socketio.emit('new_notification', notif.to_dict(), room=f'user_{user_id}')
+

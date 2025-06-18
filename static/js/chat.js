@@ -75,20 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
             room: roomName
         });
 
-        // 2. Đồng thời gửi POST để Flask lưu Message & Notification
-        const formData = new FormData();
-        formData.append("receiver_id", receiverId);
-        formData.append("content", content);
-        try {
-            await fetch("/messages/send", {
-                method: "POST",
-                body: formData,
-                credentials: "same-origin"
-        });
-        } catch (err) {
-        console.error("Không thể lưu notification:", err);
-        }
-
         input.value = "";
     });
 

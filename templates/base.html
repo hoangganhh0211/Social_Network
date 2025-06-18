@@ -102,7 +102,7 @@
         const socket = io();
         // Join room user cụ thể
         socket.on('connect', () => {
-            socket.emit('join', { room: 'user_{{ session.user_id }}' });
+            socket.emit('join_room', { room: 'user_{{ session.user_id }}' });
         });
 
         socket.on('new_notification', (data) => {

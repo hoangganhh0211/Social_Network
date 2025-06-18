@@ -10,6 +10,10 @@ from flask_socketio import join_room, leave_room, emit
 
 from flask_login import current_user, login_required
 
+from .gemini_api import chat_with_gemini
+
+from modules.notifications.routes import notify_user
+
 # Login thì zô đc
 def login_required(fn):
     from functools import wraps
@@ -176,6 +180,23 @@ def send_message():
         flash("Vui lòng chọn người nhận và nhập nội dung.", 'warning')
         return redirect(url_for('messages.inbox'))
     
+    # Nếu gửi đến Gemini bot
+    if receiver_id == 999:
+        # Gọi API Gemini
+        bot_text = chat_with_gemini(message_content)
+
+        # Lưu phản hồi từ Gemini như một tin nhắn từ bot
+        bot_msg = Message(
+            sender_id=999,
+            receiver_id=current_user.user_id,
+            content=bot_text
+        )
+        db.session.add(bot_msg)
+        db.session.commit()
+    
+    print("Gửi tin nhắn đến Gemini bot:", message_content)
+
+    
     # Lưu link người nhận trỏ đến người gửi
     chat_url = url_for('messages.conversation', other_id=current_user.user_id)
 
@@ -188,16 +209,20 @@ def send_message():
     db.session.add(msg)
     db.session.flush()  # Để msg.message_id được sinh ra
 
-    notif = Notification(
-        user_id=receiver_id,
-        notif_type='new_message',
-        content=f"{current_user.username} đã gửi cho bạn một tin nhắn.",
-        link=chat_url,
-        reference_id=current_user.user_id
-    )
-    db.session.add(notif)
+    try:
+        notify_user(
+            user_id=receiver_id,
+            content=f"{current_user.username} đã gửi cho bạn một tin nhắn.",
+            link_endpoint='messages.conversation',
+            notif_type='new_message',
+            reference_id=current_user.user_id,
+            other_id=current_user.user_id
+        )
+    except Exception as e:
+        print("[ERROR] Không thể tạo thông báo:", e)
+        
+    
     db.session.commit()
-    # Kiểm tra dữ liệu có đc lưu vào db k
 
     return redirect(url_for('messages.inbox'))
 
@@ -221,42 +246,66 @@ def register_events(socketio):
 
 @socketio.on("send_message")
 def handle_send_message(data):
-    """
-    Khi client gửi một tin nhắn mới. 
-    Data kỳ vọng:
-    {
-        "sender_id": <int>,
-        "receiver_id": <int>,
-        "content": "<nội dung>",
-        "room": "<tên_room>"
-    }
-    """
+    print("[DEBUG] Nhận được sự kiện send_message:", data)
     sender_id = data.get("sender_id")
     receiver_id = data.get("receiver_id")
     content = data.get("content", "").strip()
     room = data.get("room")
-    
-
     if not (sender_id and receiver_id and content and room):
-        return  # nếu thiếu param, không làm gì
+        return
 
-    # 1) Lưu vào DB
+    # 1) Lưu message
+    sender = User.query.get(sender_id)
     new_msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
     db.session.add(new_msg)
     db.session.commit()
 
-    # 2) Broadcast tin nhắn tới tất cả client đang ở trong room đó
-    # Mình sẽ gửi về 1 object bao gồm: sender_id, content, timestamp, username của sender
-    sender = User.query.get(sender_id)
+    # 2) Tạo notification
+    if sender_id != receiver_id:
+        try:
+            notify_user(
+                user_id=receiver_id,
+                content=f"{sender.username} đã gửi cho bạn một tin nhắn.",
+                link_endpoint='messages.conversation',
+                notif_type='new_message',
+                reference_id=new_msg.message_id,
+                other_id=sender_id
+            )
+        except Exception as e:
+            print("[ERROR] notify_user:", e)
+
+    # 3) Broadcast tin nhắn
     payload = {
         "sender_id": sender_id,
         "sender_username": sender.username,
-        "receiver_id": receiver_id, # Người nhận tin nhắn
+        "receiver_id": receiver_id,
         "content": content,
         "created_at": new_msg.created_at.strftime("%Y-%m-%d %H:%M"),
-        "message_id": new_msg.message_id,  # Để client cập nhật trạng thái riêng từng tin
+        "message_id": new_msg.message_id,
         "status": "Đã gửi"
     }
+    
+    # Nếu gửi đến Gemini bot
+    if int(receiver_id) == 999:
+        print("✓ Vào nhánh gửi Gemini bot")
+        print("Gửi tin nhắn đến Gemini bot:", content)
+        bot_response = chat_with_gemini(content)
+        bot_msg = Message(sender_id=999, receiver_id=sender_id, content=bot_response)
+        db.session.add(bot_msg)
+        db.session.commit()
+
+        # Gửi tin nhắn phản hồi về room
+        emit("receive_message", {
+            "sender_id": 999,
+            "sender_username": "Gemini Bot",
+            "receiver_id": sender_id,
+            "content": bot_response,
+            "created_at": bot_msg.created_at.strftime("%Y-%m-%d %H:%M"),
+            "message_id": bot_msg.message_id,
+            "status": "Đã gửi"
+        }, room=room)
+    
+    print("[DEBUG] Payload gửi về room:", payload)
     emit("receive_message", payload, room=room)
 
 # Xử lý khi người dùng đánh dấu tin nhắn là đã đọc
@@ -266,6 +315,7 @@ def handle_messages_read(data):
     receiver_id = data.get("receiver_id") # Người đọc tin nhắn (hiện tại)
     room = data.get("room")
     if not (sender_id and receiver_id):
+        print(f"[ERROR] Không tìm thấy User có ID {sender_id}")
         return
 
     # # Khi use mở conversation, server cập nhật các tin nhắn chưa đọc thành đã đọc
