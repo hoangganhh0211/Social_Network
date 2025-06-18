@@ -1,7 +1,11 @@
 # gemini_api.py
 import requests
+import os
+from dotenv import load_dotenv
 
-GEMINI_API_KEY = "AIzaSyCVQzmaHfuQfe7_DGpiqrRQoKyfIkA5N_o"
+load_dotenv()  # Load biến môi trường từ file .env
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
 
 def chat_with_gemini(prompt):
